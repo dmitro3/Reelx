@@ -2,64 +2,15 @@
 import cls from './profile.module.scss';
 import Image from 'next/image';
 import ton from '@/assets/ton.svg';
-import {getAvatarColor} from '@/shared/helpers/getAvatarColor'
+import {getAvatarColor} from '@/shared/lib/helpers/getAvatarColor'
 import { Deposit } from './components/deposit/deposit';
 import { Promocodes } from './components/promocodes/promocodes';
-import { useState, useEffect, useRef } from 'react';
+import { useTelegram } from '@/shared/lib/hooks/useTelegram';
 
 import copyImage from '@/assets/copyId.svg'
 
 const ProfilePage = () => {
-    const [usernameInitial, setUsernameInitial] = useState('T'); // fallback
-    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-    const [username, setUsername] = useState<string | null>(null);
-
-    useEffect(() => {
-        const initTelegram = () => {
-            if (typeof window === 'undefined' || !window.Telegram?.WebApp) {
-                return;
-            }
-
-            // Вызываем ready() для инициализации WebApp
-            window.Telegram.WebApp.ready();
-            
-            const user = window.Telegram.WebApp.initDataUnsafe?.user;
-            if (user) {
-                const userUsername = user.username || user.first_name || 'T';
-                const initial = userUsername.slice(0, 1).toUpperCase();
-                setUsernameInitial(initial);
-                setUsername(userUsername);
-                setPhotoUrl(user.photo_url);
-            }
-        };
-
-        // Проверяем сразу и при загрузке скрипта
-        if (typeof window !== 'undefined') {
-            if (document.readyState === 'complete') {
-                initTelegram();
-            } else {
-                window.addEventListener('load', initTelegram);
-            }
-
-            // Также проверяем через интервал на случай, если скрипт загрузится позже
-            const checkInterval = setInterval(() => {
-                if (window.Telegram?.WebApp) {
-                    clearInterval(checkInterval);
-                    initTelegram();
-                }
-            }, 100);
-
-            // Очищаем интервал через 5 секунд
-            setTimeout(() => {
-                clearInterval(checkInterval);
-            }, 5000);
-
-            return () => {
-                window.removeEventListener('load', initTelegram);
-                clearInterval(checkInterval);
-            };
-        }
-    }, []);
+    const { username, usernameInitial, photoUrl } = useTelegram();
 
   return (
     <div className={cls.profile}>
