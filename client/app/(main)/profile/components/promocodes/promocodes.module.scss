@@ -1,0 +1,23 @@
+.promocodes {
+    width: 100%;
+    background: var(--dark-blue);
+    padding: 16px 19px;
+    border-radius: 16px;
+    margin-top: 24px;
+
+    & .header {
+        font-weight: 600;
+        font-size: 10px;
+    }
+
+    & .content {
+        font-weight: 500;
+        font-size: 10px;
+        margin-top: 6px;
+        color:var(--white-opacity);
+
+        & a {
+            color: var(--link-blue);
+        }
+    }
+}

@@ -1,0 +1,33 @@
+.error {
+    padding: 0 20px;
+    @apply flex justify-between items-center flex-col h-[100vh] w-[100vw] pb-[30px];
+    // background: linear-gradient(0deg, #482BC2  -100%, #1E1D2B 100%); 0F1332
+    background: linear-gradient(0deg, #0F1332  -100%, #0F0927 100%);
+
+    & .info {
+        margin-top: 50%;
+        transform: translateY(50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+
+        & .header {
+            font-size: 20px;
+            font-family: Montserrat;
+            color: var(--white);
+            font-weight: 700;
+            letter-spacing: 0%;
+            text-align: center;
+        }
+
+        & .content {
+            font-size: 10px;
+            font-family: Montserrat;
+            color: var(--white);
+            font-weight: 600;
+            letter-spacing: 0%;
+            text-align: center;
+        }
+    }
+}

@@ -1,0 +1,106 @@
+.profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+    margin-top: 40px;
+
+    & .upContainer {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        align-items: center;
+        gap:18px;
+        width: 100%;
+
+        & .headerPhoto {
+            width: 100px;
+            height: 100px;
+            aspect-ratio: 1/1;
+            border-radius: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            grid-column-start: 2;
+            grid-column-end: 2;
+            grid-row-start: 1;
+            grid-row-end: 1;
+            justify-self: center;
+        
+        
+            & .profileHeader {
+                color:var(--black);
+        
+            }
+        }
+       
+
+        & .balance {
+          grid-column-start: 3;
+          grid-column-end: 3;
+          grid-row-start: 1;
+          grid-row-end: 1;
+         
+          display: flex;
+          flex-direction: column;
+
+          & .profileBalance {
+            display: flex;
+            gap:8px;
+
+            & .tonBalance {
+                font-size: 20px;
+                font-weight: 600;
+                letter-spacing: 0%;
+                text-align: center;
+            }
+          }
+
+          & .balanceSubtitle {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0%;
+            opacity: 0.5;
+            text-wrap: nowrap;
+          }
+        }
+    }
+
+    & .name {
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: 0%;
+        text-align: center;
+    }
+
+    .userId {
+        font-size: 10px;
+        opacity: 0.5;
+        font-weight: 600;
+        letter-spacing: 0%;
+        display: flex;
+        align-items: center;
+        gap:3px;
+    }
+
+}
+
+.profileHeader {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0%;
+    text-align: center;
+}
+
+.support {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    background: var(--dark-blue);
+    position: absolute;
+    left:20px;
+    top:20px;
+}
+

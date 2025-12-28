@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  --white:#fff;
+  --backgroud-blue:#0C1134;
+  --black:#000000;
+  --button-blue:#2F329330;
+  --primory:#1e1d2b;
+  --dark-blue:#262244;
+  --light-blue:#7456E9;
+  --link-blue:#0075FF;
+  --white-opacity:#ffffff90;
+}
+
+body {
+  background: var(--backgroud-blue);
+  font-family: var(--font-montserrat);
+  color: var(--white);
+}
+

@@ -1,0 +1,42 @@
+.deposit {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--dark-blue);
+    padding: 16px 19px;
+    border-radius: 16px;
+    margin-top: 24px;
+
+    & .leftContainer {
+
+        & .header {
+            font-weight: 600;
+            font-size: 10px;
+        }
+        
+        & .balances {
+            display: flex;
+            font-size:20px;
+            font-weight: 600;
+            gap:24px;
+
+            & .ton, & .star {
+                display: flex;
+                gap:6px;
+            }
+        }
+    }
+
+    & .rightContainer {
+        & .depositButton {
+            height: 32px;
+            width: 78px;
+            font-size: 10px;
+            background: var(--light-blue);
+            color:var(--white);
+        }
+    }
+
+    
+}
