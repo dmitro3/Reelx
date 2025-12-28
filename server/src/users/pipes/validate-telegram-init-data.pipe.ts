@@ -11,16 +11,31 @@ import { UserLoginInterface } from '../interface/user-login.interface';
 export class ValidateTelegramInitDataPipe
   implements PipeTransform<string, UserLoginInterface>
 {
-  transform(value: string, metadata: ArgumentMetadata): UserLoginInterface {
-    if (!this.validateInitData(value)) {
+  transform(value: any, metadata: ArgumentMetadata): UserLoginInterface {
+    // Обрабатываем случай, когда initData приходит как объект { initData: "..." }
+    let initData: string;
+    if (typeof value === 'string') {
+      initData = value;
+    } else if (value && typeof value === 'object' && value.initData) {
+      initData = value.initData;
+    } else {
+      throw new BadRequestException('initData must be a string or an object with initData property');
+    }
+
+    console.log('Transform received value type:', typeof value);
+    console.log('InitData length:', initData.length);
+
+    if (!this.validateInitData(initData)) {
       throw new BadRequestException('Invalid Telegram initData');
     }
 
-    return this.extractUserData(value);
+    return this.extractUserData(initData);
   }
 
   private validateInitData(initData: string): boolean {
     try {
+      console.log('Received initData:', initData.substring(0, 200) + '...');
+      
       // Парсим initData вручную, чтобы сохранить исходные закодированные значения
       // для проверки hash (Telegram требует использовать исходные значения)
       const parts = initData.split('&');
@@ -28,26 +43,38 @@ export class ValidateTelegramInitDataPipe
       let hash = '';
 
       for (const part of parts) {
-        const [key, ...valueParts] = part.split('=');
-        const value = valueParts.join('='); // На случай если в значении есть =
+        const equalIndex = part.indexOf('=');
+        if (equalIndex === -1) continue;
+        
+        const key = part.substring(0, equalIndex);
+        const value = part.substring(equalIndex + 1);
         
         if (key === 'hash') {
           hash = value;
-        } else {
+        } else if (key !== 'signature') {
+          // Игнорируем signature, так как для WebApp используется hash
           paramsMap.set(key, value);
         }
       }
 
+      console.log('Extracted hash:', hash);
+      console.log('Params count:', paramsMap.size);
+
       if (!hash) {
+        console.error('Hash not found in initData');
         return false;
       }
 
       // Сортируем параметры по ключу и создаем строку для проверки
       // Используем исходные закодированные значения
-      const dataCheckString = Array.from(paramsMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
+      const sortedEntries = Array.from(paramsMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b));
+      
+      const dataCheckString = sortedEntries
         .map(([key, value]) => `${key}=${value}`)
         .join('\n');
+      
+      console.log('Data check string:', dataCheckString.substring(0, 300) + '...');
 
       // Получаем токен бота из переменных окружения
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -68,14 +95,19 @@ export class ValidateTelegramInitDataPipe
         .digest('hex');
 
       // Сравниваем хеши
+      console.log('Calculated hash:', calculatedHash);
+      console.log('Received hash:', hash);
+      
       if (calculatedHash !== hash) {
-        console.error('Hash mismatch:', {
-          calculated: calculatedHash,
-          received: hash,
-          dataCheckString: dataCheckString.substring(0, 100) + '...',
-        });
+        console.error('Hash mismatch!');
+        console.error('Calculated:', calculatedHash);
+        console.error('Received:', hash);
+        console.error('Data check string length:', dataCheckString.length);
+        console.error('Bot token exists:', !!process.env.TELEGRAM_BOT_TOKEN);
         return false;
       }
+      
+      console.log('Hash validation passed!');
 
       // Проверяем время (auth_date не должен быть старше 24 часов)
       const authDate = paramsMap.get('auth_date');
@@ -92,6 +124,11 @@ export class ValidateTelegramInitDataPipe
 
       return true;
     } catch (error) {
+      console.error('Error in validateInitData:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       return false;
     }
   }
