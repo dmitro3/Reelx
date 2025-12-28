@@ -17,7 +17,7 @@ export class UserRepository {
 
     async createUser(user: UserLoginInterface): Promise<User> {
         return (await this.prisma.user.create({
-            data: { telegramId: user.telegramId, username: user.username },
+            data: { telegramId: user.telegramId, username: user.username, photoUrl: user.photoUrl},
         }));
     }
 

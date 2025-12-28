@@ -98,6 +98,7 @@ export class ValidateTelegramInitDataPipe
       return {
         telegramId: String(userData.id),
         username: userData.username || '',
+        photoUrl: '',
       };
     } catch (error) {
       if (error instanceof BadRequestException) {

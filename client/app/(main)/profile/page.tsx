@@ -5,10 +5,19 @@ import ton from '@/assets/ton.svg';
 import {getAvatarColor} from '@/shared/helpers/getAvatarColor'
 import { Deposit } from './components/deposit/deposit';
 import { Promocodes } from './components/promocodes/promocodes';
+import { useState, useEffect } from 'react';
 
 import copyImage from '@/assets/copyId.svg'
 
 const ProfilePage = () => {
+    const [usernameInitial, setUsernameInitial] = useState('T'); // fallback
+
+    useEffect(() => {
+      
+        const username = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+        const initial = (username || 'test').slice(0, 1).toUpperCase();
+        setUsernameInitial(initial);
+    }, []);
 
   return (
     <div className={cls.profile}>
@@ -21,7 +30,7 @@ const ProfilePage = () => {
        <div className={cls.upContainer}>
             <div className={cls.headerPhoto} style={{backgroundColor: getAvatarColor()}}>
                 <span className={cls.profileHeader}>
-                    {(window?.Telegram?.WebApp?.initDataUnsafe?.user?.username || 'test').slice(0,1).toUpperCase()}
+                    {usernameInitial.slice(0,1).toUpperCase()}
                 </span>
             </div>
             <div className={cls.balance}>
