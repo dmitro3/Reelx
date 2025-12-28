@@ -51,13 +51,22 @@ const DepositPage = () => {
             </div>
             <div className={cls.inputContainer}>
                 <Image className={cls.inputImage} src={activeCard.image} width={16} height={16} alt=''></Image>
-                <input value={inputValue} onChange={(e) => setInputValue(e.target.value)} className={cls.input}/>
+                <input 
+                    type="text" 
+                    inputMode="numeric"
+                    value={inputValue} 
+                    onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setInputValue(value);
+                    }} 
+                    className={cls.input}
+                />
             </div>
 
             <div className={cls.buttons}>
                 {
                     buttons.map(el => 
-                        <button key={el} onClick={() => setInputValue(String(el))}>{el}</button>
+                        <button key={el} className={cls.button} onClick={() => setInputValue(String(el))}>{el}</button>
                     )
                 }
             </div>
