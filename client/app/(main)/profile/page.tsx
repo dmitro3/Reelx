@@ -13,10 +13,44 @@ const ProfilePage = () => {
     const [usernameInitial, setUsernameInitial] = useState('T'); // fallback
 
     useEffect(() => {
-      
-        const username = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
-        const initial = (username || 'test').slice(0, 1).toUpperCase();
-        setUsernameInitial(initial);
+        const initTelegram = () => {
+            if (window.Telegram?.WebApp) {
+                // Вызываем ready() для инициализации WebApp
+                window.Telegram.WebApp.ready();
+                
+                const username = window.Telegram.WebApp.initDataUnsafe?.user?.username;
+                const initial = (username || 'T').slice(0, 1).toUpperCase();
+                setUsernameInitial(initial);
+            } else {
+                // Если Telegram объект еще не загружен, ждем
+                const checkInterval = setInterval(() => {
+                    if (window.Telegram?.WebApp) {
+                        clearInterval(checkInterval);
+                        window.Telegram.WebApp.ready();
+                        
+                        const username = window.Telegram.WebApp.initDataUnsafe?.user?.username;
+                        const initial = (username || 'T').slice(0, 1).toUpperCase();
+                        setUsernameInitial(initial);
+                    }
+                }, 100);
+
+                // Очищаем интервал через 5 секунд, если Telegram так и не загрузился
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                }, 5000);
+            }
+        };
+
+        // Проверяем сразу и при загрузке скрипта
+        if (document.readyState === 'complete') {
+            initTelegram();
+        } else {
+            window.addEventListener('load', initTelegram);
+        }
+
+        return () => {
+            window.removeEventListener('load', initTelegram);
+        };
     }, []);
 
   return (
@@ -29,9 +63,11 @@ const ProfilePage = () => {
 
        <div className={cls.upContainer}>
             <div className={cls.headerPhoto} style={{backgroundColor: getAvatarColor()}}>
+               {window.Telegram?.WebApp ?
+                <Image src={String(window.Telegram.WebApp.initDataUnsafe)} alt=''/> :
                 <span className={cls.profileHeader}>
                     {usernameInitial.slice(0,1).toUpperCase()}
-                </span>
+                </span>}
             </div>
             <div className={cls.balance}>
                 <div className={cls.profileBalance}>
