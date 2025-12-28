@@ -5,13 +5,14 @@ import ton from '@/assets/ton.svg';
 import {getAvatarColor} from '@/shared/helpers/getAvatarColor'
 import { Deposit } from './components/deposit/deposit';
 import { Promocodes } from './components/promocodes/promocodes';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import copyImage from '@/assets/copyId.svg'
 
 const ProfilePage = () => {
     const [usernameInitial, setUsernameInitial] = useState('T'); // fallback
     const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+    const userRef = useRef<any>(null);
 
     useEffect(() => {
         const initTelegram = () => {
@@ -23,25 +24,13 @@ const ProfilePage = () => {
             window.Telegram.WebApp.ready();
             
             const user = window.Telegram.WebApp.initDataUnsafe?.user;
+            userRef.current = user;
             if (user) {
                 const username = user.username;
                 const initial = (username || 'T').slice(0, 1).toUpperCase();
                 setUsernameInitial(initial);
-
-                // Парсим initData для получения photo_url
-                try {
-                    const initData = window.Telegram.WebApp.initData;
-                    const params = new URLSearchParams(initData);
-                    const userParam = params.get('user');
-                    if (userParam) {
-                        const userData = JSON.parse(decodeURIComponent(userParam));
-                        if (userData.photo_url) {
-                            setPhotoUrl(`https://reelx.online/api/users/photo/${userData.photo_url}`);
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Failed to parse photo_url from initData:', e);
-                }
+                setPhotoUrl(user.photo_url);
+                  
             }
         };
 
@@ -101,7 +90,7 @@ const ProfilePage = () => {
        </div>
         
        
-        <span className={cls.name}>John Doe</span>
+        <span className={cls.name}>{userRef.current.username}</span>
         <span className={cls.userId}>
             <span>User ID {12345}</span>
             <Image src={copyImage} alt='' height={10} width={8.6}></Image>
