@@ -12,7 +12,7 @@ import copyImage from '@/assets/copyId.svg'
 const ProfilePage = () => {
     const [usernameInitial, setUsernameInitial] = useState('T'); // fallback
     const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-    const userRef = useRef<any>(null);
+    const [username, setUsername] = useState<string | null>(null);
 
     useEffect(() => {
         const initTelegram = () => {
@@ -24,13 +24,12 @@ const ProfilePage = () => {
             window.Telegram.WebApp.ready();
             
             const user = window.Telegram.WebApp.initDataUnsafe?.user;
-            userRef.current = user;
             if (user) {
-                const username = user.username;
-                const initial = (username || 'T').slice(0, 1).toUpperCase();
+                const userUsername = user.username || user.first_name || 'T';
+                const initial = userUsername.slice(0, 1).toUpperCase();
                 setUsernameInitial(initial);
+                setUsername(userUsername);
                 setPhotoUrl(user.photo_url);
-                  
             }
         };
 
@@ -90,7 +89,7 @@ const ProfilePage = () => {
        </div>
         
        
-        <span className={cls.name}>{userRef.current.username}</span>
+        <span className={cls.name}>{username || usernameInitial}</span>
         <span className={cls.userId}>
             <span>User ID {12345}</span>
             <Image src={copyImage} alt='' height={10} width={8.6}></Image>
