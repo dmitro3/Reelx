@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 import tonImage from '@/assets/ton.svg'
 import { Button } from '@/shared/ui/Button/Button';
+import { usePayment } from './hooks/usePayment';
 
 interface cardsInerface {
     title:string;
@@ -17,6 +18,12 @@ interface cardsInerface {
 }
 
 const DepositPage = () => {
+
+    const { handlePayment } = usePayment();
+
+    const handlePaymentClick = async (amount: number, type: 'stars') => {
+        await handlePayment(amount, type);
+    }
 
     const cards = [
         {
@@ -99,7 +106,7 @@ const DepositPage = () => {
                 }
             </div>
         
-            <div>
+            <div onClick={() => handlePaymentClick(inputValue, 'stars')}>
                 <Button customClass={cls.depositButton} text={`Пополнить на ${inputValue} ${activeCard.item}`}></Button>
             </div>
 
