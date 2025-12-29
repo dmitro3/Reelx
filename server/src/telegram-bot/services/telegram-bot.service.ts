@@ -109,7 +109,7 @@ export class TelegramBotService {
           [
             {
               text: 'Открыть приложение',
-              url: link,
+              web_app: { url: link },
             },
           ],
         ],
