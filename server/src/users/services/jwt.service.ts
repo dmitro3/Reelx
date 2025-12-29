@@ -6,6 +6,8 @@ interface TokenPayload {
   userId: string;
   username: string;
   photoUrl: string | null;
+  tonBalance: number;
+  starsBalance: number;
 }
 
 interface TokenPair {
@@ -22,6 +24,8 @@ export class JwtService {
       userId: user.id,
       username: user.username,
       photoUrl: user.photoUrl,
+      tonBalance: user.tonBalance,
+      starsBalance: user.starsBalance,
     };
     const accessToken = this.generateToken(payload, '1h');
     const refreshToken = this.generateToken(payload, '7d');

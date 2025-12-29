@@ -2,12 +2,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { paymentService } from '@/features/payment/payment';
 import { usePaymentStore } from '@/entites/payment/model/payment';
+import { useUserStore } from '@/entites/user/model/user';
 
 export const usePayment = () => {
     const [isChecking, setIsChecking] = useState(false);
     const lastTransactionIdRef = useRef<string | null>(null);
     const isCheckingRef = useRef(false);
     const { setStarsBalance } = usePaymentStore();
+    const { user, updateBalance } = useUserStore();
 
     const checkPayment = useCallback(async () => {
         if (isCheckingRef.current) return;
@@ -22,6 +24,21 @@ export const usePayment = () => {
             ]);
 
             setStarsBalance(balance.starsBalance);
+
+            // Обновляем баланс в user store
+            if (user) {
+                const currentStarsBalance = user.starsBalance ?? 0;
+                const currentTonBalance = user.tonBalance ?? 0;
+                const starsDiff = balance.starsBalance - currentStarsBalance;
+                const tonDiff = balance.tonBalance - currentTonBalance;
+
+                if (starsDiff !== 0) {
+                    updateBalance(starsDiff, 'stars');
+                }
+                if (tonDiff !== 0) {
+                    updateBalance(tonDiff, 'ton');
+                }
+            }
 
             if (latestTransaction && latestTransaction.id !== lastTransactionIdRef.current) {
                 if (lastTransactionIdRef.current !== null) {
@@ -38,7 +55,7 @@ export const usePayment = () => {
             isCheckingRef.current = false;
             setIsChecking(false);
         }
-    }, [setStarsBalance]);
+    }, [setStarsBalance, user, updateBalance]);
 
     useEffect(() => {
         checkPayment();
@@ -81,6 +98,22 @@ export const usePayment = () => {
             const currentTransaction = await paymentService.getLatestTransaction();
             
             setStarsBalance(currentBalance.starsBalance);
+
+            // Обновляем баланс в user store
+            if (user) {
+                const currentStarsBalance = user.starsBalance ?? 0;
+                const currentTonBalance = user.tonBalance ?? 0;
+                const starsDiff = currentBalance.starsBalance - currentStarsBalance;
+                const tonDiff = currentBalance.tonBalance - currentTonBalance;
+
+                if (starsDiff !== 0) {
+                    updateBalance(starsDiff, 'stars');
+                }
+                if (tonDiff !== 0) {
+                    updateBalance(tonDiff, 'ton');
+                }
+            }
+
             lastTransactionIdRef.current = currentTransaction?.id || null;
 
             const response = await paymentService.handlePayment(amount, type);

@@ -7,7 +7,7 @@ export class AuthService {
         try {
         const {accessToken} = await userService.login(initData);
         const decoded = jwt.decode(accessToken) as jwt.JwtPayload;
-        const { userId, username, photoUrl } = decoded || {};
+        const { userId, username, photoUrl, tonBalance, starsBalance } = decoded || {};
 
         localStorage.setItem('accessToken', accessToken);
 
@@ -19,7 +19,7 @@ export class AuthService {
             throw new Error('Login response is missing required user fields');
         }
 
-            useUserStore.getInitialState().setUser({ userId, username, photoUrl });
+            useUserStore.getInitialState().setUser({ userId, username, photoUrl, tonBalance: Number(tonBalance || 0), starsBalance: Number(starsBalance || 0) });
             return { userId, username, photoUrl };
         } catch (error) {
             console.error('Error logging in:', error);

@@ -2,6 +2,7 @@ import cls from './error.module.scss';
 import Image from 'next/image'
 import errorImage from '@/assets/NFT.png'
 import { Button } from '@/shared/ui/Button/Button';
+import Link from 'next/link';
 
 interface ErrorProps {
     errorText: string;
@@ -19,7 +20,9 @@ const Error = ({errorText, errorSubText}:ErrorProps) => {
                 <p className={cls.content}>{errorSubText}</p>
             </div>
 
-            <Button text='Понятно'></Button>
+            <Link className={cls.button} href='/'>
+                <Button text='Понятно'></Button>
+            </Link>
         </div>
     )
 }

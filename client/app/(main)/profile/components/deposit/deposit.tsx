@@ -5,7 +5,12 @@ import tonImage from '@/assets/ton.svg';
 import starImage from '@/assets/star.svg'
 import { Button } from '@/shared/ui/Button/Button';
 
-const Deposit = () => {
+interface DepositProps {
+    tonBalance: number;
+    starsBalance: number;
+}
+
+const Deposit = ({ tonBalance, starsBalance }: DepositProps) => {
 
     return (
         <div className={cls.deposit}>
@@ -13,11 +18,11 @@ const Deposit = () => {
                 <h2 className={cls.header}>Баланс</h2>
                 <div className={cls.balances}>
                     <div className={cls.ton}>
-                        <span>{0}</span>
+                        <span>{tonBalance}</span>
                         <Image src={tonImage} alt="ton" width={20} height={20} />
                     </div>
                     <div className={cls.star}>
-                        <span>{0}</span>
+                        <span>{starsBalance}</span>
                         <Image src={starImage} alt="star" width={20} height={20} />
                     </div>
                 </div>

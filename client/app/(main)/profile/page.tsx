@@ -8,9 +8,12 @@ import { Promocodes } from './components/promocodes/promocodes';
 import { useTelegram } from '@/shared/lib/hooks/useTelegram';
 
 import copyImage from '@/assets/copyId.svg'
+import { useUserStore } from '@/entites/user/model/user';
+import { copyToClipboard } from '@/shared/lib/helpers/copyToClipboard';
 
 const ProfilePage = () => {
     const { username, usernameInitial, photoUrl } = useTelegram();
+    const { user } = useUserStore();
 
   return (
     <div className={cls.profile}>
@@ -33,7 +36,7 @@ const ProfilePage = () => {
             <div className={cls.balance}>
                 <div className={cls.profileBalance}>
                     <Image src={ton} alt="balance" width={20} height={20} />
-                    <span className={cls.tonBalance}>{1000}</span>
+                    <span className={cls.tonBalance}>{user?.tonBalance || 0}</span>
                 </div>
                 <span className={cls.balanceSubtitle}>Всего выиграно</span>
             </div>
@@ -41,12 +44,12 @@ const ProfilePage = () => {
         
        
         <span className={cls.name}>{username || usernameInitial}</span>
-        <span className={cls.userId}>
-            <span>User ID {12345}</span>
+        <span className={cls.userId} onClick={() => copyToClipboard(user?.userId || '')}>
+            <span>User ID {user?.userId}</span>
             <Image src={copyImage} alt='' height={10} width={8.6}></Image>
         </span>
 
-        <Deposit></Deposit>
+        <Deposit tonBalance={user?.tonBalance || 0} starsBalance={user?.starsBalance || 0}></Deposit>
         <Promocodes></Promocodes>
     </div>
   );

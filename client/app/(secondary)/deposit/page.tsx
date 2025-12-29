@@ -1,13 +1,14 @@
 'use client'
 import cls from './deposit.module.scss';
 import Image from 'next/image';
-
-import starImage from '@/assets/star.svg';
 import { useState } from 'react';
-
-import tonImage from '@/assets/ton.svg'
 import { Button } from '@/shared/ui/Button/Button';
 import { usePayment } from './hooks/usePayment';
+
+import starImage from '@/assets/star.svg';
+import tonImage from '@/assets/ton.svg'
+import cryptoImage from '@/assets/icons/crytobot.svg'
+import cardImage from '@/assets/icons/card.svg'
 
 interface cardsInerface {
     title:string;
@@ -33,20 +34,20 @@ const DepositPage = () => {
             item:'stars'
         },
         {
-            title:'TG Stars',
-            image:starImage,
+            title:'TON Pay',
+            image:tonImage,
             state:'stars1',
             item:'stars'
         },
         {
-            title:'TG Stars',
-            image:starImage,
+            title:'CryptoBot',
+            image:cryptoImage,
             state:'stars2',
             item:'stars'
         },
         {
-            title:'TG Stars',
-            image:starImage,
+            title:'Картой',
+            image:cardImage,
             state:'stars3',
             item:'stars'
         }
@@ -78,7 +79,7 @@ const DepositPage = () => {
                 {
                     cards.map(el => 
                         <div key={el.state} className={`${cls.card} ${el.state === activeCard.state ? cls.active : null}`}>
-                            <Image src={starImage} alt={el.title} width={30} height={30}/>
+                            <Image src={el.image} alt={el.title} width={30} height={30}/>
                             <span>{el.title}</span>
                         </div>
                     )

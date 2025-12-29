@@ -31,8 +31,11 @@
                 color:var(--black);
         
             }
+
+            & img {
+                width: 100%;
+            }
         }
-       
 
         & .balance {
           grid-column-start: 3;
