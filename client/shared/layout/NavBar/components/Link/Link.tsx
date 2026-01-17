@@ -13,7 +13,7 @@ interface LinkProps {
 
 const NavBarLink = ({link, image, imageActive, title}: LinkProps) => {
     const pathname = usePathname();
-    const isActive = pathname === link;
+    const isActive = pathname.includes(link);
     return (
         <Link href={link}>
             <Image src={isActive ? imageActive : image} alt={title}/>

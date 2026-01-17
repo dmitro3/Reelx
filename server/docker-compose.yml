@@ -1,11 +1,10 @@
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: gifts-postgres
     restart: unless-stopped
     env_file:
-      - .env
+      - ./server/.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -28,7 +27,7 @@ services:
     container_name: gifts-redis
     restart: unless-stopped
     env_file:
-      - .env
+      - ./server/.env
     ports:
       - '${REDIS_PORT}:6379'
     volumes:
@@ -43,12 +42,12 @@ services:
 
   server:
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile
     container_name: gifts-server
     restart: unless-stopped
     env_file:
-      - .env
+      - ./server/.env
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
@@ -66,8 +65,35 @@ services:
     networks:
       - gifts-network
     volumes:
-      - ./libs/infrustructure/prisma:/app/libs/infrustructure/prisma
-      - ./libs/statics:/app/libs/statics
+      - ./server/libs/infrustructure/prisma:/app/libs/infrustructure/prisma
+      - ./server/libs/statics:/app/libs/statics
+
+  nftbuyber:
+    build:
+      context: ./nftbuyber
+      dockerfile: Dockerfile
+    container_name: gifts-nftbuyber
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${NFTBUYBER_PORT:-3001}
+      TONCENTER_URL: ${TONCENTER_URL}
+      TONCENTER_API_KEY: ${TONCENTER_API_KEY}
+      TON_API_URL: ${TON_API_URL}
+      TON_API_KEY: ${TON_API_KEY}
+      MARKETPLACE_API_KEY: ${MARKETPLACE_API_KEY}
+      WALLET_MNEMONIC: ${WALLET_MNEMONIC}
+      REDIS_URL: redis://redis:6379
+      GETGEMS_API_KEY: ${GETGEMS_API_KEY}
+    ports:
+      - '${NFTBUYBER_PORT:-3001}:3001'
+    networks:
+      - gifts-network
+    depends_on:
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

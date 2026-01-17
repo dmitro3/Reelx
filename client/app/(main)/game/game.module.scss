@@ -1,0 +1,48 @@
+.gamePage {
+    min-height: 100vh;
+    background: var(--backgroud-blue);
+    padding-bottom: 80px; // Отступ для NavBar
+    margin-top: 40px;
+}
+
+.pageHeader {
+    padding: 20px 20px 0 20px;
+    margin-bottom: 16px;
+}
+
+.titleContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0%;
+    margin: 0;
+}
+
+.starIcon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+.downContainer {
+    background: linear-gradient(180deg, #7E62EE 0%, #7E62EE00 20%);
+    border-radius: 20px;
+  
+}
+
+.commingSoon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #00000080;
+    display: flex;
+    justify-content: center;
+    z-index: 40;
+    align-items: center;
+}

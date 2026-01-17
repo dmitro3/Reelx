@@ -1,0 +1,22 @@
+.tablesList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 100px; // Отступ для кнопки
+    min-height: 424px;
+    background: linear-gradient(180deg, #21223E 0%, #130D30 100%);
+    border-radius: 20px;
+}
+
+.tableWrapper {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+

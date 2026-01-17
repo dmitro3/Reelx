@@ -1,0 +1,232 @@
+.winModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    background: #000201;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+
+    &.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+}
+
+// Background
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(to bottom, #0c1134, #190925, #190418, #12010b, #000000);
+    background-blend-mode: normal, normal, normal;
+    z-index: 1;
+}
+
+// Prize Card
+.prizeCard {
+    position: relative;
+    width: 167px;
+    height: 191px;
+    margin: 100px auto 0;
+    background: 
+        linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%),
+        rgba(154, 133, 225, 0.61);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.nftBlur {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.nftImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.prizePlaceholder {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.giftName {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #FFFFFF;
+    text-align: center;
+    line-height: 1.22;
+}
+
+// Win Text
+.winText {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin: 24px auto 0;
+    padding: 0 20px;
+    max-width: 208px;
+    animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #FFFFFF;
+    line-height: 1.22;
+    margin-bottom: 8px;
+}
+
+.description {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    color: #FFFFFF;
+    line-height: 1.22;
+    opacity: 0.8;
+}
+
+// Actions
+.actions {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 162px;
+    margin: 44px auto 0;
+    animation: slideUp 0.6s ease-out 0.4s both;
+}
+
+.sellButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    background: 
+        linear-gradient(90deg, rgba(116, 86, 233, 1) -10%,  10%, rgba(255, 255, 255, 1) 100%);
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    color: #1E1D2B;
+    line-height: 1.22;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(116, 86, 233, 0.4);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.claimButton,
+.backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.32);
+    line-height: 1.22;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.32);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.priceTag {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    img {
+        width: 11px;
+        height: 11px;
+    }
+
+    span {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 10px;
+        line-height: 1.22;
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .prizeCard {
+        margin-top: 100px;
+    }
+}

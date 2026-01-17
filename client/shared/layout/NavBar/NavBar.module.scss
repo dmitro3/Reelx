@@ -14,4 +14,13 @@
     -moz-backdrop-filter: blur(10px);
     -o-backdrop-filter: blur(10px);
     -ms-backdrop-filter: blur(10px);
+    z-index: 50;
+
+    & a {
+        width: 57px;
+        height: 45px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+    }
 }
