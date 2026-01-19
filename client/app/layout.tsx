@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AuthInit } from "@/features/auth/AuthInit";
+import { TonConnectProvider } from "@/shared/providers/TonConnectProvider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -57,6 +58,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Manifest URL для TonConnect (нужно будет настроить)
+  const manifestUrl = process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL || 'https://raw.githubusercontent.com/ton-community/tutorials/main/03-client/test/public/tonconnect-manifest.json';
+  
   return (
     <html lang="en">
       <body
@@ -66,8 +70,10 @@ export default function RootLayout({
           src="https://telegram.org/js/telegram-web-app.js"
           strategy="afterInteractive"
         />
-        <AuthInit />
-        {children}
+        <TonConnectProvider manifestUrl={manifestUrl}>
+          <AuthInit />
+          {children}
+        </TonConnectProvider>
       </body>
     </html>
   );
