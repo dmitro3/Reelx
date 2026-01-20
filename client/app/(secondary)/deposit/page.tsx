@@ -64,9 +64,7 @@ const DepositPage = () => {
                     console.error('Error depositing TON:', error);
                     alert('Ошибка при пополнении баланса. Транзакция отправлена, но баланс не обновлен. Обратитесь в поддержку.');
                 }
-            } else {
-                alert(result.error || 'Ошибка при отправке транзакции');
-            }
+            } 
         } catch (error: any) {
             console.error('Error in TON deposit:', error);
             alert(error?.message || 'Ошибка при пополнении TON');
