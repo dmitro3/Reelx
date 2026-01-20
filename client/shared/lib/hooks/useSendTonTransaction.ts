@@ -35,14 +35,10 @@ const useSendTONTransaction = (adminAddress: string) => {
       }
 
       if (!wallet) {
-        try {
-          const ui = tonConnectUI as any;
-          ui.openModal?.();
-          ui.connectWallet?.();
-        } catch (e) {
-        } finally {
-          return { success: false };
-        }
+        const errorMessage = "Wallet is not connected";
+        setError(errorMessage);
+        console.error(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       const amountTON = parseFloat(amount);
@@ -67,7 +63,14 @@ const useSendTONTransaction = (adminAddress: string) => {
       console.log("Transaction successfully sent", result);
       return { success: true, result };
     } catch (error) {
-      const errorMessage = (error as Error).message;
+      const err = error as Error;
+      const errorMessage = err.message || String(error);
+
+      // Пользователь отменил действие в кошельке – игнорируем тихо
+      if (errorMessage.includes('UserRejectsError')) {
+        return { success: false };
+      }
+
       setError(errorMessage);
       console.error("Error sending transaction:", error);
       return { success: false, error: errorMessage };
