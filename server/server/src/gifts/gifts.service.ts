@@ -51,7 +51,7 @@ export class GiftsService {
       
       // Определяем тип подарков на основе amount
       const giftType = getCurrentType(amount);
-
+      
       this.logger.debug(`Getting gifts by type: ${giftType} for amount: ${amount}, currency: ${currencyType || 'not specified'}`);
 
       let result: any;
