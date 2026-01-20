@@ -60,7 +60,7 @@ export default function RootLayout({
 }>) {
   // Manifest URL для TonConnect (храним в public/tonconnect-manifest.json)
   // Если нужен абсолютный URL (production), можно переопределить через NEXT_PUBLIC_TONCONNECT_MANIFEST_URL
-  const manifestUrl = process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL || '/tonconnect-manifest.json';
+  const manifestUrl = process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL || 'https://reelx.online/tonconnect-manifest.json';
   
   return (
     <html lang="en">
