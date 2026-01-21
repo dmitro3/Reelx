@@ -129,4 +129,24 @@ export class UserRepository {
             data,
         }));
     }
+
+    async getUserGames(userId: string) {
+        return (await this.prisma.userGames.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+        }));
+    }
+
+    async markUserGiftsAsOut(userId: string, giftIds: string[]) {
+        return await this.prisma.userGifts.updateMany({
+            where: {
+                userId,
+                id: { in: giftIds },
+                isOut: false,
+            },
+            data: {
+                isOut: true,
+            },
+        });
+    }
 }

@@ -3,77 +3,41 @@ export interface MoneyPrice {
   price: number;
 }
 
-interface PriceDistribution {
-  tonPrices: number[];
-  starPrices: number[];
-}
+/**
+ * Генерирует 8 лотов:
+ * - 4 пары, каждая пара суммарно равна переданному amount
+ * - в паре: p1 = amount - n, p2 = n, где n — случайное число [0, amount]
+ * - всего 8 лотов, из них половина в TON, половина в STARS
+ * @param amount - сумма в TON
+ * @param tonToStarsRate - курс конвертации TON в STARS (сколько STARS за 1 TON)
+ */
+export const getMoneyPrices = (amount: number, tonToStarsRate: number): MoneyPrice[] => {
+  const lotsPerPair = 2;
+  const totalLots = 8;
+  const pairCount = totalLots / lotsPerPair; // 4
 
-// Расчет базовых цен с вариацией
-const calculateBasePrices = (totalAmount: number): PriceDistribution => {
-  const tonTotal = totalAmount * 0.6;
-  const starTotal = totalAmount * 0.4;
-  
-  const tonAverage = tonTotal / 4;
-  const tonPrices = [
-    tonAverage * 0.8,
-    tonAverage * 0.9,
-    tonAverage * 1.1,
-    tonAverage * 1.2,
-  ];
-  
-  const starAverage = starTotal / 4;
-  const starPrices = [
-    starAverage * 0.8,
-    starAverage * 0.9,
-    starAverage * 1.1,
-    starAverage * 1.2,
-  ];
-  
-  return { tonPrices, starPrices };
-};
+  const lots: MoneyPrice[] = [];
 
-// Нормализация цен чтобы сумма была равна targetAmount
-const normalizePricesToAmount = (
-  tonPrices: number[],
-  starPrices: number[],
-  targetAmount: number
-): PriceDistribution => {
-  const currentTonSum = tonPrices.reduce((sum, price) => sum + price, 0);
-  const currentStarSum = starPrices.reduce((sum, price) => sum + price, 0);
-  const currentTotal = currentTonSum + currentStarSum;
-  
-  const correctionFactor = targetAmount / currentTotal;
-  
-  return {
-    tonPrices: tonPrices.map(price => price * correctionFactor),
-    starPrices: starPrices.map(price => price * correctionFactor),
-  };
-};
+  for (let i = 0; i < pairCount; i++) {
+    const n = Math.random() * amount;
+    const first = amount - n;
+    const second = n;
 
-// Преобразование массивов цен в формат MoneyPrice[]
-const formatPricesToMoneyPrices = (
-  tonPrices: number[],
-  starPrices: number[]
-): MoneyPrice[] => {
-  const result: MoneyPrice[] = [];
-  
-  tonPrices.forEach(price => {
-    result.push({ type: 'ton', price: Number(price.toFixed(2)) });
+    lots.push(
+      { type: 'ton', price: Number(first.toFixed(2)) },
+      { type: 'ton', price: Number(second.toFixed(2)) },
+    );
+  }
+
+  // Половину лотов переводим в звезды с конвертацией цены
+  // Первые 4 оставляем TON, последние 4 конвертируем в STARS
+  return lots.map((lot, index) => {
+    if (index >= totalLots / 2) {
+      // Конвертируем цену из TON в STARS
+      const starsPrice = lot.price * tonToStarsRate;
+      return { type: 'star', price: Number(starsPrice.toFixed(2)) };
+    }
+    return lot;
   });
-  
-  starPrices.forEach(price => {
-    result.push({ type: 'star', price: Number(price.toFixed(2)) });
-  });
-  
-  return result;
 };
 
-export const getMoneyPrices = (amount: number): MoneyPrice[] => {
-  const TON_TO_USD = 1.7; 
-  const STAR_TO_USD = 0.1; 
-  
-  const { tonPrices, starPrices } = calculateBasePrices(amount);
-  const normalized = normalizePricesToAmount(tonPrices, starPrices, amount);
-  
-  return formatPricesToMoneyPrices(normalized.tonPrices, normalized.starPrices);
-};

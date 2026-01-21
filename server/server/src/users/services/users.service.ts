@@ -95,5 +95,9 @@ export class UsersService {
     }) {
         return await this.userRepository.createUserGame(data);
     }
+
+    async getUserGames(userId: string) {
+        return await this.userRepository.getUserGames(userId);
+    }
 }
 

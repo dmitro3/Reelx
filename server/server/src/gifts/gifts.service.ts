@@ -15,6 +15,7 @@ import { formatMinimalPrize } from './helpers/formatMinimalPrize.helper';
 import { StartGameResponseDto } from './dto/start-game-response.dto';
 import { UsersService } from '../users/services/users.service';
 import { UserGamesType, GameCurrancy } from '@prisma/client';
+import { CurrancyService } from '../../libs/common/modules/Currancy/services/Currancy.service';
 
 @Injectable()
 export class GiftsService {
@@ -27,6 +28,8 @@ export class GiftsService {
     private configService: ConfigService,
     private redisService: RedisService,
     private usersService: UsersService,
+    
+    private currancyService: CurrancyService,
   ) {
     this.nftBuyerUrl = this.configService.get<string>('NFT_BUYER_URL', 'http://localhost:3001');
     
@@ -49,9 +52,11 @@ export class GiftsService {
     try {
       const amount = Number(body?.amount || 0);
       const currencyType = body?.type; // 'ton' | 'stars' из запроса
+
+      const tonAmount = await this.getTonAmount(amount, currencyType as 'ton' | 'stars');
       
       // Определяем тип подарков на основе amount
-      const giftType = getCurrentType(amount);
+      const giftType = getCurrentType(tonAmount);
       
       this.logger.debug(`Getting gifts by type: ${giftType} for amount: ${amount}, currency: ${currencyType || 'not specified'}`);
 
@@ -60,14 +65,14 @@ export class GiftsService {
 
       switch (giftType) {
         case 'common':
-          const commonResult = await this.getGiftsPrices(amount, currencyType, (data) => {
+          const commonResult = await this.getGiftsPrices(tonAmount, currencyType, (data) => {
             originalData = data;
           });
           result = commonResult;
           break;
         
         case 'multi':
-          result = this.getMoneyPrices(amount);
+          result = await this.getMoneyPrices(tonAmount);
           // Для money создаем оригинальные данные из отформатированных
           originalData = result.map((item: any) => ({
             type: item.name === 'TON' ? 'ton' : 'star',
@@ -76,7 +81,7 @@ export class GiftsService {
           break;
         
         case 'secret':
-          const secretResult = await this.getSecretsPrices(amount, (data) => {
+          const secretResult = await this.getSecretsPrices(tonAmount, (data) => {
             originalData = data;
           });
           result = secretResult;
@@ -123,14 +128,12 @@ export class GiftsService {
     const inputCurrency = currencyType === 'stars' ? 'stars' : 'ton';
     const amountTon = convertAmountToTon(amount, inputCurrency);
 
-    // В nftbuyber отправляем ТОЛЬКО amount в TON
     this.logger.debug(
       `Proxying request to ${url} with body: ${JSON.stringify({ amount: amountTon })} (from ${amount} ${inputCurrency})`,
     );
 
     const response = await this.axiosInstance.post(url, { amount: amountTon });
 
-    //if(response.status !== 200) throw new InternalServerErrorException()
 
     const type = getCurrentType(Number(amount));
 
@@ -146,12 +149,15 @@ export class GiftsService {
     return gifts;
   }
 
-  private getRawMoneyPrices(amount: number) {
-    return getMoneyPrices(amount);
+  private async getRawMoneyPrices(amount: number) {
+    const rates = await this.currancyService.getCurrancyRates();
+    // Курс конвертации: сколько STARS за 1 TON
+    const tonToStarsRate = rates.ton / rates.stars;
+    return getMoneyPrices(amount, tonToStarsRate);
   }
 
-  private getMoneyPrices(amount: number) {
-    return formatMoneyItems(this.getRawMoneyPrices(amount));
+  private async getMoneyPrices(amount: number) {
+    return formatMoneyItems(await this.getRawMoneyPrices(amount));
   }
 
   private async getSecretsPrices(
@@ -164,7 +170,7 @@ export class GiftsService {
       originalGiftsData = data;
     });
     
-    const moneyPrices = this.getRawMoneyPrices(amount);
+    const moneyPrices = await this.getRawMoneyPrices(amount);
 
     const secrets = combineGiftsAndMoney(originalGiftsData, moneyPrices, 8);
     
@@ -404,7 +410,12 @@ export class GiftsService {
     }
   }
 
-  private setPricesInCache() {
-
+  private async getTonAmount(amount: number, currencyType: 'ton' | 'stars') {
+    const currancyRates = await this.currancyService.getCurrancyRates();
+    if (currencyType === 'ton') {
+      return amount;
+    } else {
+      return amount * currancyRates.stars / currancyRates.ton;
+    }
   }
 }

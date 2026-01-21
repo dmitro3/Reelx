@@ -161,5 +161,13 @@ export class UserController {
         return this.userService.getUserGifts(userId);
     }
 
+    @Get('/games')
+    @UseGuards(JwtAuthGuard)
+    async getUserGames(
+        @CurrentUser() userId: string,
+    ) {
+        return this.userService.getUserGames(userId);
+    }
+
 }
 
