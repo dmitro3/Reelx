@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../libs/infrustructure/prisma/prisma.service';
 import { UserLoginInterface } from '../interface/user-login.interface';
-import { User, Transaction, TransactionType } from '@prisma/client';
+import { User, Transaction, TransactionType, UserGamesType, GameCurrancy } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -116,6 +116,17 @@ export class UserRepository {
                 createdAt: true,
             },
             orderBy: { createdAt: 'desc' },
+        }));
+    }
+
+    async createUserGame(data: {
+        userId: string;
+        type: UserGamesType;
+        priceAmount: number;
+        priceType: GameCurrancy;
+    }) {
+        return (await this.prisma.userGames.create({
+            data,
         }));
     }
 }

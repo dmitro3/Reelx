@@ -51,15 +51,13 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 8.67px;
     align-self: center;
-    min-height: 319px;
+    margin-bottom: 100px;
 }
 
 .giftItem {
-    width: 112px;
+    width: 100%;
     height: 156px;
-    background: linear-gradient(107deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%),
-        #302c44;
-    border-radius: 12px;
+    background: #302c44;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -84,25 +82,16 @@
 }
 
 .giftName {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 120px;
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     font-size: 10px;
     line-height: 1.219;
     text-align: center;
     color: #ffffff;
-    width: 52px;
-    height: 12px;
+    margin-top: 10px;
 }
 
 .giftPrice {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 136px;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -114,6 +103,7 @@
     line-height: 1.219;
     text-align: left;
     color: #ffffff;
+    margin-bottom: 10px;
 
     img {
         width: 10px;

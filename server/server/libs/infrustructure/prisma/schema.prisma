@@ -25,6 +25,8 @@ model User {
   transactions Transaction[]
   gameMembers  GameMembers[]
   userGifts    UserGifts[]
+  userGames    UserGames[]
+  userPromocodes UserPromocodes[]
 
   @@map("users")
 }
@@ -74,6 +76,55 @@ model UserGifts {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_gifts")
+}
+
+model UserGames {
+  id          String        @id @default(uuid())
+  userId      String
+  type        UserGamesType @default(solo)
+  priceAmount Float
+  priceType   GameCurrancy
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_games")
+}
+
+model Promocodes {
+  id          String        @id @default(uuid())
+  promocode   String        @unique
+  currency    GameCurrancy
+  amount      Float
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userPromocodes UserPromocodes[]
+
+  @@map("promocodes")
+}
+
+model UserPromocodes {
+  id          String      @id @default(uuid())
+  userId      String
+  promocodeId String
+
+  createdAt   DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promocode   Promocodes  @relation(fields: [promocodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promocodeId])
+  @@map("user_promocodes")
+}
+
+
+
+enum UserGamesType {
+  solo
 }
 
 enum GameStatus {

@@ -14,6 +14,7 @@ import { WheelItem, WheelGiftItem, WheelMoneyItem, WheelSecretItem } from './int
 import { formatMinimalPrize } from './helpers/formatMinimalPrize.helper';
 import { StartGameResponseDto } from './dto/start-game-response.dto';
 import { UsersService } from '../users/services/users.service';
+import { UserGamesType, GameCurrancy } from '@prisma/client';
 
 @Injectable()
 export class GiftsService {
@@ -326,6 +327,13 @@ export class GiftsService {
           collectionAddress: giftPrize.collection.address,
           image: giftPrize.image,
           price: giftPrize.price,
+        });
+
+        await this.usersService.createUserGame({
+          userId,
+          type: UserGamesType.solo,
+          priceAmount: giftPrize.price,
+          priceType: GameCurrancy.TON,
         });
 
         this.logger.debug(

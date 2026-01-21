@@ -3,6 +3,7 @@ import { UserRepository } from '../repositorys/user.repository';
 import { ChangeUsernameDto } from '../dto/change-username.dto';
 import { TransactionType } from '@prisma/client';
 import { UserGiftRto } from '../rto/user-gift.rto';
+import { UserGamesType, GameCurrancy } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -84,6 +85,15 @@ export class UsersService {
             isOut: gift.isOut,
             createdAt: gift.createdAt,
         }));
+    }
+
+    async createUserGame(data: {
+        userId: string;
+        type: UserGamesType;
+        priceAmount: number;
+        priceType: GameCurrancy;
+    }) {
+        return await this.userRepository.createUserGame(data);
     }
 }
 
