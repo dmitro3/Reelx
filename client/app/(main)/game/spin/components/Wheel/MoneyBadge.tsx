@@ -1,4 +1,5 @@
 import { TonIcon } from './TonIcon';
+import { StarIcon } from './StarIcon';
 import cls from './MoneyBadge.module.scss';
 import { GiftItem } from '@/entites/gifts/interfaces/giftItem.interface';
 
@@ -8,14 +9,17 @@ interface MoneyBadgeProps {
 
 export const MoneyBadge = ({ item }: MoneyBadgeProps) => {
     const isTon = item.name === 'TON';
+    const isStars = item.name === 'STARS';
     const rawPrice = item.price ?? 0;
     const displayPrice = isTon ? rawPrice.toFixed(2) : Math.round(rawPrice).toString();
     
     return (
-        <div className={cls.moneyBadge}>
+        <div className={`${cls.moneyBadge} ${isStars ? cls.moneyBadgeStars : ''}`}>
             <div className={cls.icon}>
                 {isTon ? (
                     <TonIcon size={12} />
+                ) : isStars ? (
+                    <StarIcon size={12} />
                 ) : (
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path 

@@ -3,6 +3,7 @@
 import cls from './inventory.module.scss';
 import { useInventory } from './hooks/useInventory';
 import { GiftItem } from './components/GiftItem';
+import { HistoryItem } from './components/HistoryItem';
 
 export const Inventory = () => {
     const { activeTab, setActiveTab, historyGifts, inventoryGifts, isLoading } = useInventory();
@@ -25,14 +26,14 @@ export const Inventory = () => {
             </div>
 
             {activeTab === 'history' && (
-                <div className={cls.inventoryList}>
+                <div className={cls.historyList}>
                     {isLoading ? (
                         <div className={cls.emptyState}>Загрузка...</div>
                     ) : historyGifts.length === 0 ? (
                         <div className={cls.emptyState}>История пуста</div>
                     ) : (
                         historyGifts.map((gift) => (
-                            <GiftItem key={gift.id} gift={gift} />
+                            <HistoryItem key={gift.id} gift={gift} />
                         ))
                     )}
                 </div>
