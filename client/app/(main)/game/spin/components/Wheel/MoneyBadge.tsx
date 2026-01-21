@@ -8,6 +8,8 @@ interface MoneyBadgeProps {
 
 export const MoneyBadge = ({ item }: MoneyBadgeProps) => {
     const isTon = item.name === 'TON';
+    const rawPrice = item.price ?? 0;
+    const displayPrice = isTon ? rawPrice.toFixed(2) : Math.round(rawPrice).toString();
     
     return (
         <div className={cls.moneyBadge}>
@@ -25,7 +27,7 @@ export const MoneyBadge = ({ item }: MoneyBadgeProps) => {
                     </svg>
                 )}
             </div>
-            <span className={cls.amount}>{Math.round(item.price)}</span>
+            <span className={cls.amount}>{displayPrice}</span>
         </div>
     );
 };
