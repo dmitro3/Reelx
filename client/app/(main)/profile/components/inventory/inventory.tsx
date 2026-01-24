@@ -3,16 +3,26 @@
 import cls from './inventory.module.scss';
 import { useInventory } from './hooks/useInventory';
 import { useGameDataModal } from '../../hooks/useGameDataModal';
+import { useNftModal } from '../../hooks/useNftModal';
 import { prepareGameModalData } from '../../helpers/gameDataHelper';
 import { GiftItem } from './components/GiftItem';
 import { GameHistoryItem } from './components/GameHistoryItem';
 import { GameDataModal } from '../GameDataModal/GameDataModal';
+import { NftModal } from '../NftModal/NftModal';
 
 export const Inventory = () => {
     const { activeTab, setActiveTab, historyGames, inventoryGifts, isLoading } = useInventory();
-    const { isOpen, selectedGame, openModal, closeModal } = useGameDataModal();
+    const { isOpen: isGameModalOpen, selectedGame, openModal: openGameModal, closeModal: closeGameModal } = useGameDataModal();
+    const { isOpen: isNftModalOpen, selectedNft, openModal: openNftModal, closeModal: closeNftModal } = useNftModal();
 
     const modalData = selectedGame ? prepareGameModalData(selectedGame) : null;
+
+    const handleSellNft = (nft: typeof selectedNft) => {
+        if (nft) {
+            console.log('Selling NFT:', nft);
+            // TODO: Implement sell logic
+        }
+    };
 
     return (
         <div className={cls.inventory}>
@@ -42,7 +52,7 @@ export const Inventory = () => {
                             <GameHistoryItem 
                                 key={game.id} 
                                 game={game} 
-                                onClick={openModal}
+                                onClick={openGameModal}
                             />
                         ))
                     )}
@@ -57,7 +67,11 @@ export const Inventory = () => {
                         <div className={cls.emptyState}>Инвентарь пуст</div>
                     ) : (
                         inventoryGifts.map((gift) => (
-                            <GiftItem key={gift.id} gift={gift} />
+                            <GiftItem 
+                                key={gift.id} 
+                                gift={gift} 
+                                onClick={openNftModal}
+                            />
                         ))
                     )}
                 </div>
@@ -65,8 +79,8 @@ export const Inventory = () => {
 
             {modalData && (
                 <GameDataModal
-                    isOpen={isOpen}
-                    onClose={closeModal}
+                    isOpen={isGameModalOpen}
+                    onClose={closeGameModal}
                     gameId={modalData.gameId}
                     gameType={modalData.gameType}
                     date={modalData.date}
@@ -77,6 +91,13 @@ export const Inventory = () => {
                     winner={modalData.winner}
                 />
             )}
+
+            <NftModal
+                isOpen={isNftModalOpen}
+                onClose={closeNftModal}
+                nft={selectedNft}
+                onSell={handleSellNft}
+            />
         </div>
     );
 };

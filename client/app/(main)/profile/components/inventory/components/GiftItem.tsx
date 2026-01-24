@@ -5,11 +5,16 @@ import cls from '../inventory.module.scss';
 
 interface GiftItemProps {
     gift: UserGift;
+    onClick?: (gift: UserGift) => void;
 }
 
-export const GiftItem: React.FC<GiftItemProps> = ({ gift }) => {
+export const GiftItem: React.FC<GiftItemProps> = ({ gift, onClick }) => {
+    const handleClick = () => {
+        onClick?.(gift);
+    };
+
     return (
-        <div className={cls.giftItem}>
+        <div className={cls.giftItem} onClick={handleClick} style={{ cursor: 'pointer' }}>
             <div className={cls.giftImage}>
                 <Image
                     src={gift.image || '/NFT.png'}
