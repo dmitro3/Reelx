@@ -1,0 +1,325 @@
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+
+    &.closing {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+}
+
+.modal {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #1E1D2B 0%, #0C1134 100%);
+    border-radius: 20px 20px 0 0;
+    z-index: 1001;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+
+    &.closing {
+        animation: slideDown 0.3s ease-out forwards;
+    }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px;
+    position: relative;
+}
+
+.title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.22;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.closeButton {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 1px;
+    }
+
+    &::before {
+        transform: rotate(45deg);
+    }
+
+    &::after {
+        transform: rotate(-45deg);
+    }
+}
+
+.content {
+    padding: 0 20px 20px;
+}
+
+.gameData {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.dataItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: calc(33.33% - 12px);
+    min-width: 100px;
+}
+
+.dataLabel {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 1.22;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.dataValue {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    line-height: 1.22;
+    color: #FFFFFF;
+}
+
+.winBlock {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.winImage {
+    width: 144px;
+    height: 144px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%), #927DD5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.winInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.winLabel {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 1.22;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.winTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.22;
+    color: #FFFFFF;
+}
+
+.winAmount {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.22;
+    color: #FFFFFF;
+}
+
+.divider {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    margin: 20px 0;
+}
+
+.playersList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.playerItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.playerInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.playerAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+.playerDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.playerName {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    line-height: 1.22;
+    color: #FFFFFF;
+}
+
+.playerStatus {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 1.22;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.playerResult {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.22;
+
+    &.positive {
+        color: #4CAF50;
+    }
+
+    &.negative {
+        color: #FF5252;
+    }
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.22;
+    width: 100%;
+
+    &.secondary {
+        background: #35314B;
+        color: #FFFFFF;
+    }
+
+    &.primary {
+        background: linear-gradient(45deg, #7456E9 0%, #8EB3EF 33%, #E6DDF7 68%, #CFAEFE 100%);
+        color: #1E1D2B;
+    }
+}
+
+.hashText {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.hashValue {
+    color: #FFFFFF;
+}

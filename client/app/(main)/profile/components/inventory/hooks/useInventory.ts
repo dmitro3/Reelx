@@ -6,7 +6,7 @@ export const useInventory = () => {
     const [activeTab, setActiveTab] = useState<'inventory' | 'history'>('history');
     const [gifts, setGifts] = useState<UserGift[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { user } = useUserStore();
+    const { user, games } = useUserStore();
 
     useEffect(() => {
         const loadGifts = async () => {
@@ -31,13 +31,13 @@ export const useInventory = () => {
         loadGifts();
     }, [user?.userId]);
 
-    const historyGifts = gifts;
+    const historyGames = games ?? [];
     const inventoryGifts = gifts.filter(gift => !gift.isOut);
 
     return {
         activeTab,
         setActiveTab,
-        historyGifts,
+        historyGames,
         inventoryGifts,
         isLoading,
     };

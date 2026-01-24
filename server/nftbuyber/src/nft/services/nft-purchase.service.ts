@@ -1,33 +1,38 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TonClient, WalletContractV4, Address } from '@ton/ton';
-import { internal, beginCell } from '@ton/core';
+import { internal, beginCell, toNano } from '@ton/core';
 import { mnemonicToWalletKey } from 'ton-crypto';
+import { getHttpEndpoint } from '@orbs-network/ton-access';
+import axios from 'axios';
 import { BuyNftResponse } from '../dto/buy-nft.dto';
 import { TransferNftResponse } from '../dto/transfer-nft.dto';
-import { SendTonResponse } from '../dto/send-ton.dto';
 
 @Injectable()
-export class NftPurchaseService {
+export class NftPurchaseService implements OnModuleInit {
   private readonly logger = new Logger(NftPurchaseService.name);
-  private readonly client: TonClient;
-  private readonly mnemonic: string[];
+  private client: TonClient | null = null;
+  private mnemonic: string[] = [];
   private readonly maxRetries = 3;
   private readonly retryDelay = 2000; // 2 секунды
+  private isInitialized = false;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {}
+
+  async onModuleInit() {
     try {
-      // Инициализация TonClient
-      const tonCenterUrl = this.configService.get<string>('TONCENTER_URL') || 'https://toncenter.com/api/v2/jsonRPC';
-      const tonCenterApiKey = this.configService.get<string>('TONCENTER_API_KEY');
+      // Получаем endpoint через @orbs-network/ton-access
+      const endpoint = await getHttpEndpoint({ network: 'mainnet' });
+      this.logger.log(`Using TON endpoint: ${endpoint}`);
 
-      if (!tonCenterApiKey) {
-        this.logger.warn('TONCENTER_API_KEY not found in environment variables');
+      const tonApiKey = this.configService.get<string>('TON_API_KEY');
+      if (!tonApiKey) {
+        this.logger.warn('TON_API_KEY not found in environment variables');
       }
 
       this.client = new TonClient({
-        endpoint: tonCenterUrl,
-        apiKey: tonCenterApiKey,
+        endpoint,
+        apiKey: tonApiKey,
       });
 
       // Инициализация кошелька из mnemonic
@@ -44,15 +49,15 @@ export class NftPurchaseService {
         this.logger.warn('WALLET_MNEMONIC not found in environment variables');
         this.mnemonic = [];
       }
+
+      this.isInitialized = true;
+      this.logger.log('NftPurchaseService initialized successfully');
     } catch (error) {
-      // Если не удалось инициализировать (например, нет @ton/ton), создаем заглушки
       this.logger.error(`Failed to initialize NftPurchaseService: ${error.message}`);
       this.logger.error('Please install dependencies: npm install --legacy-peer-deps');
-      
-      // Создаем заглушки, чтобы сервис мог быть создан
+      this.client = null;
       this.mnemonic = [];
-      // @ts-ignore - игнорируем ошибку типа, если модуль не установлен
-      this.client = null as any;
+      this.isInitialized = false;
     }
   }
 
@@ -65,6 +70,11 @@ export class NftPurchaseService {
       const expectedOwner = Address.parse(saleAddress);
 
       // Получаем адрес NFT из sale контракта
+      if (!this.client) {
+        this.logger.warn('TON client not initialized');
+        return false;
+      }
+
       let nftAddress: Address;
       let isComplete = false;
       try {
@@ -86,6 +96,11 @@ export class NftPurchaseService {
       }
 
       // ПРОВЕРЯЕМ ТОЛЬКО NFT - это единственный источник истины
+      if (!this.client) {
+        this.logger.warn('TON client not initialized');
+        return false;
+      }
+
       let nftData;
       try {
         nftData = await this.client.runMethod(nftAddress, 'get_nft_data');
@@ -120,6 +135,11 @@ export class NftPurchaseService {
       }
 
       // Проверяем, что owner (sale контракт) является активным контрактом
+      if (!this.client) {
+        this.logger.warn('TON client not initialized');
+        return false;
+      }
+
       try {
         const ownerState = await this.client.getContractState(actualOwner);
         if (ownerState.state !== 'active') {
@@ -138,6 +158,61 @@ export class NftPurchaseService {
       this.logger.warn(`Failed to verify fixed-price sale: ${error.message}`);
       // При ошибке возвращаем false, но это не должно блокировать покупку
       return false;
+    }
+  }
+
+  /**
+   * Получает владельца NFT через прямой HTTP запрос к API v3
+   */
+  private async getNftOwnerViaApi(nftAddress: string): Promise<Address | null> {
+    try {
+      const tonApiUrl = this.configService.get<string>('TON_API_URL') || 'https://toncenter.com/api/v3';
+      const tonApiKey = this.configService.get<string>('TON_API_KEY');
+      
+      const queryString = new URLSearchParams({
+        address: nftAddress,
+        include_on_sale: 'false',
+        limit: '1',
+        offset: '0',
+      }).toString();
+      
+      const fullUrl = `${tonApiUrl}/nft/items?${queryString}`;
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      
+      if (tonApiKey) {
+        headers['X-API-Key'] = tonApiKey;
+      }
+      
+      const response = await axios.get(fullUrl, {
+        headers,
+        timeout: 10000,
+      });
+      
+      if (response.data?.nft_items && response.data.nft_items.length > 0) {
+        const nftItem = response.data.nft_items[0];
+        if (nftItem.owner_address) {
+          const ownerRaw = nftItem.owner_address;
+          const ownerEntry = response.data.address_book?.[ownerRaw];
+          
+          if (ownerEntry?.user_friendly) {
+            return Address.parse(ownerEntry.user_friendly);
+          } else if (ownerRaw) {
+            try {
+              return Address.parse(ownerRaw);
+            } catch (parseError) {
+              this.logger.debug(`Failed to parse owner address ${ownerRaw}: ${parseError.message}`);
+            }
+          }
+        }
+      }
+      
+      return null;
+    } catch (error: any) {
+      this.logger.warn(`Failed to get NFT owner via API: ${error.message}`);
+      return null;
     }
   }
 
@@ -180,10 +255,15 @@ export class NftPurchaseService {
    */
   async getSalePrice(saleAddress: string): Promise<bigint | null> {
     try {
+      if (!this.client) {
+        this.logger.warn('TON client not initialized');
+        return null;
+      }
+
       const saleAddr = Address.parse(saleAddress);
       
       const saleData = await this.retryOnRateLimit(
-        () => this.client.runMethod(saleAddr, 'get_sale_data'),
+        () => this.client!.runMethod(saleAddr, 'get_sale_data'),
         'get_sale_data'
       );
       
@@ -338,281 +418,113 @@ export class NftPurchaseService {
     nftAddress: string,
     newOwnerAddress: string,
     queryId?: string,
-    forwardAmount?: string,
   ): Promise<TransferNftResponse> {
     try {
-      // Проверяем наличие @ton/ton модуля
-      if (!this.client) {
-        return {
-          success: false,
-          error: 'TON client not initialized. Please install dependencies: npm install --legacy-peer-deps',
+      // Guard: проверяем готовность клиента
+      if (!this.isInitialized || !this.client) {
+        return { 
+          success: false, 
+          error: 'TON client not initialized. Service is still initializing or initialization failed.' 
         };
       }
-
-      // Проверяем наличие mnemonic
+  
       if (!this.mnemonic || this.mnemonic.length !== 24) {
-        return {
-          success: false,
-          error: 'Wallet mnemonic not configured. Set WALLET_MNEMONIC in environment variables.',
-        };
+        return { success: false, error: 'Wallet mnemonic not configured' };
       }
-
-      // Валидируем адреса
-      let nftAddr: Address;
-      let newOwnerAddr: Address;
-      try {
-        nftAddr = Address.parse(nftAddress);
-        newOwnerAddr = Address.parse(newOwnerAddress);
-      } catch (error) {
-        return {
-          success: false,
-          error: `Invalid address format: ${error.message}`,
-        };
-      }
-
-      // Проверяем, что текущий кошелек является владельцем NFT
-      try {
-        const nftData = await this.retryOnRateLimit(
-          () => this.client.runMethod(nftAddr, 'get_nft_data'),
-          'get_nft_data'
-        );
-        
-        nftData.stack.readNumber(); // init
-        nftData.stack.readNumber(); // index
-        nftData.stack.readAddress(); // collection
-        const currentOwner = nftData.stack.readAddress(); // owner
-
-        // Получаем адрес кошелька из mnemonic для проверки
-        const keyPair = await mnemonicToWalletKey(this.mnemonic);
-        const wallet = WalletContractV4.create({
-          workchain: 0,
-          publicKey: keyPair.publicKey,
-        });
-        const walletAddress = wallet.address;
-
-        // Проверяем, что текущий владелец - это наш кошелек
-        const currentOwnerStr = currentOwner.toString({ urlSafe: true, bounceable: false });
-        const walletAddressStr = walletAddress.toString({ urlSafe: true, bounceable: false });
-        
-        if (currentOwnerStr !== walletAddressStr) {
-          // Проверяем разные форматы адресов
-          const currentOwnerStrBounceable = currentOwner.toString({ urlSafe: true, bounceable: true });
-          const walletAddressStrBounceable = walletAddress.toString({ urlSafe: true, bounceable: true });
-          
-          if (currentOwnerStrBounceable !== walletAddressStrBounceable) {
-            this.logger.warn(`NFT owner mismatch. Current owner: ${currentOwnerStr}, Wallet: ${walletAddressStr}`);
-            return {
-              success: false,
-              error: 'Current wallet is not the owner of this NFT',
-            };
-          }
-        }
-      } catch (error: any) {
-        this.logger.warn(`Failed to verify NFT ownership: ${error.message}`);
-        // Не блокируем перевод - проверка может быть слишком строгой
-      }
-
-      // Создаем кошелек
+  
+      const nftAddr = Address.parse(nftAddress);
+      const newOwnerAddr = Address.parse(newOwnerAddress);
+  
+      this.logger.log(`NFT12: ${nftAddress}`);
+      // --- wallet ---
       const keyPair = await mnemonicToWalletKey(this.mnemonic);
       const wallet = WalletContractV4.create({
         workchain: 0,
         publicKey: keyPair.publicKey,
       });
-
+  
       const walletContract = this.client.open(wallet);
-
-      // Создаем тело сообщения transfer
-      // op: 0x5fcc3d14 (transfer op code)
-      // query_id: uint64
-      // new_owner: MsgAddress
-      // response_destination: MsgAddress (null)
-      // custom_payload: Cell (null)
-      // forward_amount: Coins
-      // forward_payload: Cell (null)
-      const transferOp = 0x5fcc3d14; // transfer op code
-      const queryIdValue = queryId ? BigInt(queryId) : BigInt(Date.now());
-      const forwardAmountNano = forwardAmount ? BigInt(forwardAmount) : 50000000n; // Минимальная сумма для газа
-
-      const transferBody = beginCell()
-        .storeUint(transferOp, 32) // op
+     
+      // --- payload ---
+      const queryIdValue =
+        queryId ? BigInt(queryId) : (BigInt(Date.now()) << 16n);
+  
+      const gasAmount = toNano('0.03');
+  
+      // NFT transfer payload format (standard TON NFT):
+      // op (32 bits) = 0x5fcc3d14
+      // query_id (64 bits)
+      // new_owner (Address)
+      // response_destination (Address)
+      // custom_payload (1 bit: 0 = no payload, stored as bit)
+      // forward_amount (Coins)
+      // forward_payload (1 bit: 0 = no payload, stored as bit, NOT as ref)
+      const transferPayload = beginCell()
+        .storeUint(0x5fcc3d14, 32) // transfer opcode
         .storeUint(queryIdValue, 64) // query_id
         .storeAddress(newOwnerAddr) // new_owner
-        .storeAddress(null) // response_destination (null)
-        .storeRef(beginCell().endCell()) // custom_payload (null)
-        .storeCoins(forwardAmountNano) // forward_amount
-        .storeRef(beginCell().endCell()) // forward_payload (null)
+        .storeAddress(wallet.address) // response_destination
+        .storeBit(0) // no custom_payload (stored as bit)
+        .storeCoins(toNano("0.01")) // forward_amount
+        .storeBit(0) // no forward_payload (stored as bit, not ref)
         .endCell();
-
-      this.logger.log(`Transferring NFT on-chain…`);
+  
+      this.logger.log('Sending NFT transfer');
       this.logger.log(`NFT: ${nftAddress}`);
-      this.logger.log(`New owner: ${newOwnerAddress}`);
-      this.logger.log(`Query ID: ${queryIdValue.toString()}`);
+      this.logger.log(`To: ${newOwnerAddress}`);
+      this.logger.log(`Query ID: ${queryIdValue}`);
+      this.logger.log(`Gas Amount: ${gasAmount}`);
+      this.logger.log(`Transfer Payload: ${transferPayload.toBoc().toString('hex')}`);
+      this.logger.log(`Wallet Address: ${wallet.address.toString({ bounceable: false })}`);
 
-      // Отправляем транзакцию с retry логикой
-      // Важно: получаем seqno внутри retry, чтобы он был актуальным при каждой попытке
-      await this.retryOnRateLimit(
-        async () => {
-          // Получаем актуальный seqno перед каждой попыткой отправки
-          const currentSeqno = await walletContract.getSeqno();
-          await walletContract.sendTransfer({
-            seqno: currentSeqno,
-            secretKey: keyPair.secretKey,
-            messages: [
-              internal({
-                to: nftAddr, // Используем объект Address, а не строку
-                value: forwardAmountNano,
-                bounce: true,
-                body: transferBody,
-              }),
-            ],
-          });
-        },
-        'sendTransfer'
-      );
-
-      this.logger.log('Transfer transaction sent successfully');
-
-      return {
-        success: true,
-        message: 'Transfer transaction sent successfully. Check the blockchain for confirmation.',
-      };
-    } catch (error: any) {
-      const isRateLimit = 
-        error?.status === 429 || 
-        error?.response?.status === 429 ||
-        error?.message?.includes('429') ||
-        error?.message?.includes('rate limit') ||
-        error?.message?.includes('Too Many Requests');
-
-      if (isRateLimit) {
-        this.logger.error(`Rate limit (429) when transferring NFT. Please wait and try again.`);
-        return {
-          success: false,
-          error: 'Rate limit exceeded (429). Please wait a few seconds and try again. Too many requests to TON API.',
-        };
-      }
-
-      this.logger.error(`Failed to transfer NFT: ${error.message}`);
-      return {
-        success: false,
-        error: error.message || 'Unknown error occurred',
-      };
-    }
-  }
-
-  /**
-   * Отправляет TON на указанный адрес
-   */
-  async sendTon(toAddress: string, amount: string): Promise<SendTonResponse> {
-    try {
-      // Проверяем наличие @ton/ton модуля
-      if (!this.client) {
-        return {
-          success: false,
-          error: 'TON client not initialized. Please install dependencies: npm install --legacy-peer-deps',
-        };
-      }
-
-      // Проверяем наличие mnemonic
-      if (!this.mnemonic || this.mnemonic.length !== 24) {
-        return {
-          success: false,
-          error: 'Wallet mnemonic not configured. Set WALLET_MNEMONIC in environment variables.',
-        };
-      }
-
-      // Валидируем адрес получателя
-      let toAddr: Address;
-      try {
-        toAddr = Address.parse(toAddress);
-      } catch (error) {
-        return {
-          success: false,
-          error: `Invalid recipient address format: ${toAddress}`,
-        };
-      }
-
-      // Валидируем сумму
-      let amountInNano: bigint;
-      try {
-        amountInNano = BigInt(amount);
-        if (amountInNano <= 0n) {
-          return {
-            success: false,
-            error: 'Amount must be greater than 0',
-          };
+      // Получаем истинного владельца NFT через API v3 для отладки
+      const nftOwner = await this.getNftOwnerViaApi(nftAddress);
+      if (nftOwner) {
+        this.logger.log(`🔍 NFT on-chain owner (TRUE): ${nftOwner.toString({ bounceable: false })}`);
+        this.logger.log(`🔍 Wallet address: ${wallet.address.toString({ bounceable: false })}`);
+        this.logger.log(`🔍 New owner address: ${newOwnerAddress}`);
+        
+        // Проверяем, совпадает ли текущий владелец с кошельком
+        const ownerStr = nftOwner.toString({ bounceable: false, urlSafe: true });
+        const walletStr = wallet.address.toString({ bounceable: false, urlSafe: true });
+        if (ownerStr === walletStr) {
+          this.logger.log(`✅ NFT owner matches wallet - transfer should work`);
+        } else {
+          this.logger.warn(`⚠️ NFT owner DOES NOT match wallet! Owner: ${ownerStr}, Wallet: ${walletStr}`);
         }
-      } catch (error) {
-        return {
-          success: false,
-          error: `Invalid amount format: ${amount}`,
-        };
+      } else {
+        this.logger.warn(`⚠️ Could not get NFT owner via API`);
       }
-
-      // Создаем кошелек
-      const keyPair = await mnemonicToWalletKey(this.mnemonic);
-      const wallet = WalletContractV4.create({
-        workchain: 0,
-        publicKey: keyPair.publicKey,
+  
+      const seqno = await walletContract.getSeqno();
+  
+      await walletContract.sendTransfer({
+        seqno,
+        secretKey: keyPair.secretKey,
+        messages: [
+          internal({
+            to: nftAddr,
+            value: gasAmount,
+            bounce: false, // 🔥 КРИТИЧЕСКИ ВАЖНО
+            body: transferPayload,
+          }),
+        ],
       });
-
-      const walletContract = this.client.open(wallet);
-      
-      // Получаем seqno с retry логикой
-      const seqno = await this.retryOnRateLimit(
-        () => walletContract.getSeqno(),
-        'getSeqno'
-      );
-
-      this.logger.log(`Sending TON on-chain…`);
-      this.logger.log(`To: ${toAddress}`);
-      this.logger.log(`Amount: ${amountInNano.toString()} nanotons`);
-
-      // Отправляем транзакцию с retry логикой
-      await this.retryOnRateLimit(
-        () => walletContract.sendTransfer({
-          seqno,
-          secretKey: keyPair.secretKey,
-          messages: [
-            internal({
-              to: toAddress,
-              value: amountInNano,
-              bounce: false, // Обычно для обычных переводов bounce = false
-              body: null,
-            }),
-          ],
-        }),
-        'sendTransfer'
-      );
-
-      this.logger.log('TON transfer transaction sent successfully');
-
+  
       return {
         success: true,
-        message: 'TON transfer transaction sent successfully. Check the blockchain for confirmation.',
+        message: 'NFT transfer transaction sent',
       };
     } catch (error: any) {
-      const isRateLimit = 
-        error?.status === 429 || 
-        error?.response?.status === 429 ||
-        error?.message?.includes('429') ||
-        error?.message?.includes('rate limit') ||
-        error?.message?.includes('Too Many Requests');
-
-      if (isRateLimit) {
-        this.logger.error(`Rate limit (429) when sending TON. Please wait and try again.`);
-        return {
-          success: false,
-          error: 'Rate limit exceeded (429). Please wait a few seconds and try again. Too many requests to TON API.',
-        };
-      }
-
-      this.logger.error(`Failed to send TON: ${error.message}`);
+      this.logger.error(`NFT transfer failed: ${error.message}`);
+  
       return {
         success: false,
-        error: error.message || 'Unknown error occurred',
+        error: error.message || 'Unknown error',
       };
     }
   }
+  
+  
 }
 

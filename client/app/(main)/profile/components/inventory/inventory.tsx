@@ -2,11 +2,17 @@
 
 import cls from './inventory.module.scss';
 import { useInventory } from './hooks/useInventory';
+import { useGameDataModal } from '../../hooks/useGameDataModal';
+import { prepareGameModalData } from '../../helpers/gameDataHelper';
 import { GiftItem } from './components/GiftItem';
-import { HistoryItem } from './components/HistoryItem';
+import { GameHistoryItem } from './components/GameHistoryItem';
+import { GameDataModal } from '../GameDataModal/GameDataModal';
 
 export const Inventory = () => {
-    const { activeTab, setActiveTab, historyGifts, inventoryGifts, isLoading } = useInventory();
+    const { activeTab, setActiveTab, historyGames, inventoryGifts, isLoading } = useInventory();
+    const { isOpen, selectedGame, openModal, closeModal } = useGameDataModal();
+
+    const modalData = selectedGame ? prepareGameModalData(selectedGame) : null;
 
     return (
         <div className={cls.inventory}>
@@ -29,11 +35,15 @@ export const Inventory = () => {
                 <div className={cls.historyList}>
                     {isLoading ? (
                         <div className={cls.emptyState}>Загрузка...</div>
-                    ) : historyGifts.length === 0 ? (
+                    ) : historyGames.length === 0 ? (
                         <div className={cls.emptyState}>История пуста</div>
                     ) : (
-                        historyGifts.map((gift) => (
-                            <HistoryItem key={gift.id} gift={gift} />
+                        historyGames.map((game) => (
+                            <GameHistoryItem 
+                                key={game.id} 
+                                game={game} 
+                                onClick={openModal}
+                            />
                         ))
                     )}
                 </div>
@@ -51,6 +61,21 @@ export const Inventory = () => {
                         ))
                     )}
                 </div>
+            )}
+
+            {modalData && (
+                <GameDataModal
+                    isOpen={isOpen}
+                    onClose={closeModal}
+                    gameId={modalData.gameId}
+                    gameType={modalData.gameType}
+                    date={modalData.date}
+                    time={modalData.time}
+                    bet={modalData.bet}
+                    betCurrency={modalData.betCurrency}
+                    chance={modalData.chance}
+                    winner={modalData.winner}
+                />
             )}
         </div>
     );

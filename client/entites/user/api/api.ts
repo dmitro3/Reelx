@@ -1,4 +1,5 @@
 import * as api from '@/shared/lib/api/api';
+import { Game } from '../interface/game.interface';
 
 export interface UserGift {
     id: string;
@@ -17,6 +18,11 @@ class UserService {
 
     async getUserGifts(): Promise<UserGift[]> {
         const response = await api.$authHost.get<UserGift[]>('/users/gifts');
+        return response.data;
+    }
+
+    async getUserGames(): Promise<Game[]> {
+        const response = await api.$authHost.get<Game[]>('/users/games');
         return response.data;
     }
 }
