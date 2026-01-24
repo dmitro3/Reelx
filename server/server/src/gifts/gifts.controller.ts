@@ -1,6 +1,7 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { GiftsService } from './gifts.service';
 import { GetGiftsByPriceDto } from './dto/get-gifts-by-price.dto';
+import { WithdrawNftDto } from './dto/withdraw-nft.dto';
 import { JwtAuthGuard } from '../../libs/common/guard/jwt-auth.guard.guard';
 import { CurrentUser } from '../../libs/common/decorators/current-user.decorator';
 import { WithdrawGiftsService } from './withdraw-gifts.service';
@@ -38,5 +39,18 @@ export class GiftsController {
     @Body() body: WithdrawGiftsDto,
   ) {
     return this.withdrawGiftsService.withdrawUserGifts(userId, body.giftIds);
+  }
+
+  @Post('withdraw-nft')
+  @UseGuards(JwtAuthGuard)
+  async withdrawNftToWallet(
+    @CurrentUser() userId: string,
+    @Body() body: WithdrawNftDto,
+  ) {
+    return this.withdrawGiftsService.withdrawNftToWallet(
+      userId,
+      body.giftId,
+      body.walletAddress,
+    );
   }
 }

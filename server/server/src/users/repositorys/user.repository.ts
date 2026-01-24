@@ -149,4 +149,13 @@ export class UserRepository {
             },
         });
     }
+
+    async findUserGiftById(userId: string, giftId: string) {
+        return await this.prisma.userGifts.findFirst({
+            where: {
+                id: giftId,
+                userId,
+            },
+        });
+    }
 }
