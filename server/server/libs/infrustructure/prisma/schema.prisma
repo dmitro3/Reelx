@@ -133,6 +133,11 @@ enum GameStatus {
   CLOSE
 }
 
+enum GamesPrises {
+  NFT
+  MONEY
+}
+
 model GameMembers {
   id        String   @id @default(uuid())
   gameId    String

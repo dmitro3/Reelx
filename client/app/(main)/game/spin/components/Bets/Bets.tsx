@@ -78,12 +78,12 @@ const Bets = ({
 
                 <div className={cls.rollSelector}>
                     
-                    {currency === 'stars' && totalPrice > 10 && (
+                    {(currency === 'stars' && totalPrice > 50 || currency === 'ton' && totalPrice > 10) && (
                         <div className={`${cls.currencyBadge} ${cls.multyBadge}`}>
                             Multy
                         </div>
                     )}
-                    {currency === 'ton' && totalPrice > 50 && (
+                    {(currency === 'ton' && totalPrice > 50 || currency === 'stars' && totalPrice > 250) && (
                         <div className={`${cls.currencyBadge} ${cls.mysteryBadge}`}>
                             Mystery
                         </div>
@@ -96,7 +96,7 @@ const Bets = ({
                         <span className={cls.minus}>−</span>
                     </button>
                     <div className={cls.rollInfo}>
-                        <span className={cls.rollText}>{rolls} Roll за {totalPrice} {currency === 'stars' ? 'STARS' : 'TON'}</span>
+                        <span className={cls.rollText}>1 Roll за {totalPrice} {currency === 'stars' ? 'STARS' : 'TON'}</span>
                     </div>
                     <button 
                         className={cls.controlButton}

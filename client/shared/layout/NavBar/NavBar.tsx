@@ -15,19 +15,21 @@ const NavBar = () => {
             image:playImage,
             imageActive:playActiveImage,
             link:'/game',
+            isMainPage:true,
         },
         {
             title:'Профиль',
             image:profileImage,
             imageActive: profileActiveImage,
-            link:'/profile'
+            link:'/profile',
+            isMainPage:false,
         },
     ]
     return (
         <nav className={cls.navbar}>
             {
                 links.map(el => 
-                    <NavBarLink key={el.link} link={el.link} image={el.image} imageActive={el.imageActive} title={el.title}/>
+                    <NavBarLink key={el.link} link={el.link} image={el.image} imageActive={el.imageActive} title={el.title} isMainPage={el.isMainPage}/>
                 )
             }
         </nav>

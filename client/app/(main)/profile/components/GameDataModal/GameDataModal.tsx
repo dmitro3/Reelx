@@ -196,8 +196,8 @@ export const GameDataModal = ({
                     )}
 
                     {/* Actions */}
-                    <div className={cls.actions}>
-                        {hash && (
+                    {hash && (
+                        <div className={cls.actions}>
                             <button className={`${cls.actionButton} ${cls.secondary}`} onClick={copyHash}>
                                 <span className={cls.hashText}>Hash:</span>
                                 <span className={cls.hashValue}>{hash.slice(0, 5)}...{hash.slice(-5)}</span>
@@ -206,17 +206,8 @@ export const GameDataModal = ({
                                     <rect x="3" y="0.5" width="6" height="9" rx="1" fill="#35314B" stroke="white"/>
                                 </svg>
                             </button>
-                        )}
-                        <button className={`${cls.actionButton} ${cls.secondary}`}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                <path d="M6 1V11M6 11L11 6M6 11L1 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <span>Скачать информацию</span>
-                        </button>
-                        <button className={`${cls.actionButton} ${cls.primary}`}>
-                            Проверить игру
-                        </button>
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

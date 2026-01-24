@@ -8,20 +8,28 @@ const ButtonModes = () => {
     const isPvP = pathname === '/game';
     const isSolo = pathname === '/game/spin';
 
+    const pages = [
+        {
+            title: 'Соло',
+            link: '/game/spin',
+            isActive: isSolo,
+        },
+        {
+            title: 'PvP',
+            link: '/game',
+            isActive: isPvP,
+        },
+    ]
+
     return (
         <div className={cls.buttonModes}>
-            <Link 
-                href="/game" 
-                className={`${cls.modeButton} ${isPvP ? cls.active : ''}`}
-            >
-                <span className={cls.modeText}>PvP</span>
-            </Link>
-            <Link 
-                href="/game/spin" 
-                className={`${cls.modeButton} ${isSolo ? cls.active : ''}`}
-            >
-                <span className={cls.modeText}>Соло</span>
-            </Link>
+            {
+                pages.map(page => (
+                    <Link key={page.link} href={page.link} className={`${cls.modeButton} ${page.isActive ? cls.active : ''}`}>
+                        <span className={cls.modeText}>{page.title}</span>
+                    </Link>
+                ))
+            }
         </div>
     );
 };

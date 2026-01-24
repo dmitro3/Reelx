@@ -3,7 +3,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 0 20px;
+
+    @media (max-height: 600px) {
+        height: calc(100vh - 170px);
+        overflow: auto;
+        padding: 52px 20px 10px;
+    }
+    
 }
 
 .spinContainer {
