@@ -45,7 +45,6 @@
 
 .inventoryList {
     width: 100%;
-    max-width: 353px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8.67px;
@@ -55,7 +54,6 @@
 
 .historyList {
     width: 100%;
-    max-width: 353px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -65,7 +63,6 @@
 
 .giftItem {
     width: 100%;
-    height: 156px;
     background: #302c44;
     display: flex;
     flex-direction: column;
@@ -77,8 +74,8 @@
 }
 
 .giftImage {
-    width: 112px;
-    height: 112px;
+    width: 100%;
+    height: auto;
     border-radius: 10px;
     overflow: hidden;
     position: relative;

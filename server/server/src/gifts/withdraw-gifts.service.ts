@@ -63,7 +63,7 @@ export class WithdrawGiftsService {
 
     try {
       // 2. Вызываем nftbuyber API для трансфера
-      const url = `${this.nftBuyerUrl}/api/nft/transfer`;
+      const url = `${this.nftBuyerUrl}/api/nft/purchase/transfer`;
       const response = await axios.post<WithdrawNftResponse>(url, {
         nft_address: userGift.giftAddress,
         new_owner_address: walletAddress,
