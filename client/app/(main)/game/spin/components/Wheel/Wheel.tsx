@@ -106,7 +106,7 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
                                 transform: 'translate(-50%, -50%)',
                             }}
                         >
-                            {item.type === 'secret' || item.type === 'mystery' ? (
+                            {item.type === 'secret' ? (
                                 <Image 
                                     src={secretIcon} 
                                     alt="Secret" 
