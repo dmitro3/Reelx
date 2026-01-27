@@ -1,9 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { TelegramBotService } from './services/telegram-bot.service';
 import { TelegramBotUpdate } from './update/telegram-bot.update';
 import { UsersModule } from '../users/users.module';
 
+@Global()
 @Module({
   imports: [
     TelegrafModule.forRootAsync({

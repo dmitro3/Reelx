@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="/api/admin-c7ad44cbad762a5da0a4/admin/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Экран логина -->
+        <div id="login-screen" class="screen active">
+            <div class="login-container">
+                <div class="login-card">
+                    <h1 class="login-title">Админ-панель</h1>
+                    <form id="login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="login">Логин</label>
+                            <input 
+                                type="text" 
+                                id="login" 
+                                name="login" 
+                                required 
+                                autocomplete="username"
+                                placeholder="Введите логин"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Пароль</label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required 
+                                autocomplete="current-password"
+                                placeholder="Введите пароль"
+                            >
+                        </div>
+                        <div id="login-error" class="error-message"></div>
+                        <button type="submit" class="btn btn-primary" id="login-btn">
+                            Войти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной экран админки -->
+        <div id="admin-screen" class="screen">
+            <header class="admin-header">
+                <div class="header-content">
+                    <h1 class="header-title">Админ-панель</h1>
+                    <div class="header-actions">
+                        <span class="user-info" id="user-info">Администратор</span>
+                        <button id="logout-btn" class="btn btn-secondary">Выйти</button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="admin-main">
+                <nav class="admin-sidebar">
+                    <ul class="sidebar-menu">
+                        <li class="menu-item active" data-page="dashboard">
+                            <span class="menu-icon">📊</span>
+                            <span>Дашборд</span>
+                        </li>
+                        <li class="menu-item" data-page="users">
+                            <span class="menu-icon">👥</span>
+                            <span>Пользователи</span>
+                        </li>
+                        <li class="menu-item" data-page="gifts">
+                            <span class="menu-icon">🎁</span>
+                            <span>Подарки</span>
+                        </li>
+                        <li class="menu-item" data-page="games">
+                            <span class="menu-icon">🎮</span>
+                            <span>Игры</span>
+                        </li>
+                        <li class="menu-item" data-page="transactions">
+                            <span class="menu-icon">💰</span>
+                            <span>Транзакции</span>
+                        </li>
+                        <li class="menu-item" data-page="settings">
+                            <span class="menu-icon">⚙️</span>
+                            <span>Настройки</span>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="admin-content">
+                    <div id="dashboard-page" class="page active">
+                        <h2>Дашборд</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Пользователи</div>
+                                    <div class="stat-value" id="stat-users">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🎁</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Подарки</div>
+                                    <div class="stat-value" id="stat-gifts">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🎮</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Игры</div>
+                                    <div class="stat-value" id="stat-games">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Транзакции</div>
+                                    <div class="stat-value" id="stat-transactions">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="users-page" class="page">
+                        <h2>Пользователи</h2>
+                        <div class="page-content">
+                            <p>Раздел пользователей (в разработке)</p>
+                        </div>
+                    </div>
+
+                    <div id="gifts-page" class="page">
+                        <h2>Подарки</h2>
+                        <div class="page-content">
+                            <p>Раздел подарков (в разработке)</p>
+                        </div>
+                    </div>
+
+                    <div id="games-page" class="page">
+                        <h2>Игры</h2>
+                        <div class="page-content">
+                            <p>Раздел игр (в разработке)</p>
+                        </div>
+                    </div>
+
+                    <div id="transactions-page" class="page">
+                        <h2>Транзакции</h2>
+                        <div class="page-content">
+                            <p>Раздел транзакций (в разработке)</p>
+                        </div>
+                    </div>
+
+                    <div id="settings-page" class="page">
+                        <h2>Настройки</h2>
+                        <div class="page-content">
+                            <p>Раздел настроек (в разработке)</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/api/admin-c7ad44cbad762a5da0a4/admin/admin.js"></script>
+</body>
+</html>

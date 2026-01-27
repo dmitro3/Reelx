@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { PromocodeModule } from './promocode/promocode.module';
@@ -20,7 +20,8 @@ import { CurrancyModule } from '../libs/common/modules/Currancy/Currancy.module'
     UsersModule,
     GiftsModule,
     PromocodeModule,
-    TelegramBotModule,
+    // Условно импортируем TelegramBotModule только если не отключен
+    ...(process.env.DISABLE_TELEGRAM_BOT !== 'true' ? [TelegramBotModule] : []),
   ],
   controllers: [],
   providers: [],

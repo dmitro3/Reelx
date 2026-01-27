@@ -1,17 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AdminModule } from './admin/admin.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const adminApp = await NestFactory.create(AdminModule)
   app.setGlobalPrefix('api');
-
+  
+  adminApp.setGlobalPrefix('api/admin-c7ad44cbad762a5da0a4')
   // CORS configuration
   app.enableCors({
     origin: process.env.CORS_ORIGIN || true, // Разрешить все origins в dev, в prod указать конкретный
     credentials: true, // Разрешить cookies и credentials
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN || true, // Разрешить все origins в dev, в prod указать конкретный
+    credentials: true, // Разрешить cookies и credentials
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],  
   });
   
   // Глобальная валидация DTO
@@ -22,7 +32,23 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  adminApp.enableCors({
+    origin: process.env.CORS_ORIGIN || true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-session-id'],
+  });
+
+  adminApp.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
   
   await app.listen(process.env.PORT ?? 3000);
+  await adminApp.listen(process.env.ADMIN_PORT ?? 3001);
 }
 bootstrap();

@@ -8,7 +8,7 @@ import { UsersModule } from '../users/users.module';
   imports: [UsersModule],
   controllers: [PromocodeController],
   providers: [PromocodeService, PromocodeRepository],
-  exports: [PromocodeService],
+  exports: [PromocodeService, PromocodeRepository],
 })
 export class PromocodeModule {}
 
