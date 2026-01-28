@@ -43,7 +43,24 @@ const Bets = ({
 }: BetsProps) => {
 
     const handleGiftClick = () => {
-        eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, wheelItems);
+        // Для модалки показываем каждый приз только один раз по имени
+        // и скрываем служебные слоты вроде "no-loot"
+        const uniqueByName: WheelItem[] = [];
+        const seen = new Set<string>();
+
+        for (const item of wheelItems) {
+            const anyItem = item as WheelItem & { type?: string };
+
+            // Пропускаем пустые слоты
+            if (anyItem.type === 'no-loot') continue;
+
+            // Дедупликация по имени
+            if (seen.has(item.name)) continue;
+            seen.add(item.name);
+            uniqueByName.push(item);
+        }
+
+        eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, uniqueByName);
     };
 
     const renderCurrencyIcon = () => {
