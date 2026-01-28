@@ -10,7 +10,7 @@ export interface GiftItem {
     // ownerAddress: string;
     // actualOwnerAddress: string;
 
-    type: 'gift' | 'money' | 'secret';
+    type: 'gift' | 'money' | 'secret' | 'no-loot';
     price: number;
     image: string;
     name: string;

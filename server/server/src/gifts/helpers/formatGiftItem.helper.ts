@@ -1,5 +1,5 @@
 export interface GiftItemFormatted {
-  type: 'gift' | 'money' | 'secret';
+  type: 'gift' | 'money' | 'secret' | 'no-loot';
   price: number;
   image: string;
   name: string;

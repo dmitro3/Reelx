@@ -18,12 +18,12 @@ export class GiftsController {
   ) {}
 
   @Post('by-price')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getGiftsByPrice(
     @Body() body?: GetGiftsByPriceDto,
-    @CurrentUser() userId?: string,
+    // @CurrentUser() userId?: string,
   ) {
-    return this.giftsService.getGiftsByPrice(body, userId);
+    return this.giftsService.getGiftsByPrice(body, '1');
   }
 
   @Post('start-game')

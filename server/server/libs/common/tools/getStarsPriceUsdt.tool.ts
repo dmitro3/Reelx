@@ -7,7 +7,7 @@ export const getCurrancyRates = async () => {
         const response = await fetch(url);
         const data = await response.json();
         return {
-            stars: data.usdt_per_star,
+            stars: 0.021,
             ton: data.usdt_per_ton
         };
     }

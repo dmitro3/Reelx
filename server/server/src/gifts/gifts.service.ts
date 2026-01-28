@@ -54,6 +54,8 @@ export class GiftsService {
       const currencyType = body?.type; // 'ton' | 'stars' из запроса
 
       const tonAmount = await this.getTonAmount(amount, currencyType as 'ton' | 'stars');
+
+      console.log('tonAmount', tonAmount);
       
       // Определяем тип подарков на основе amount
       const giftType = getCurrentType(tonAmount);
@@ -65,7 +67,7 @@ export class GiftsService {
 
       switch (giftType) {
         case 'common':
-          const commonResult = await this.getGiftsPrices(tonAmount, currencyType, (data) => {
+          const commonResult = await this.getGiftsPrices(tonAmount, 'ton', (data) => {
             originalData = data;
           });
           result = commonResult;
@@ -89,7 +91,7 @@ export class GiftsService {
         
         default:
           this.logger.warn(`Unknown type: ${giftType}, falling back to common`);
-          const defaultResult = await this.getGiftsPrices(amount, currencyType, (data) => {
+          const defaultResult = await this.getGiftsPrices(amount, 'ton', (data) => {
             originalData = data;
           });
           result = defaultResult;
@@ -97,7 +99,7 @@ export class GiftsService {
 
       // Сохраняем барабан в Redis, если есть userId
       if (userId && result && Array.isArray(result)) {
-        await this.saveWheelToRedis(userId, result, originalData, amount, currencyType);
+        await this.saveWheelToRedis(userId, result, originalData, amount, 'ton');
       }
 
       return result;
@@ -134,7 +136,6 @@ export class GiftsService {
 
     const response = await this.axiosInstance.post(url, { amount: amountTon });
 
-
     const type = getCurrentType(Number(amount));
 
     const originalGifts = response.data.gifts.slice(0, getCountGifts(amount));
@@ -144,7 +145,20 @@ export class GiftsService {
       onOriginalData(originalGifts);
     }
 
-    const gifts = originalGifts.map((g: any) => formatGiftItem(g, type === 'secret' ? 'secret' : 'gift'));
+    let gifts = originalGifts.map((g: any) =>
+      formatGiftItem(g, type === 'secret' ? 'secret' : 'gift'),
+    );
+
+    // При ставке меньше 10 – один из слотов делает "no loot"
+    if (amount < 10 && gifts.length > 0) {
+      const index = Math.floor(Math.random() * gifts.length);
+      gifts[index] = {
+        type: 'no-loot',
+        price: 0,
+        image: '',
+        name: 'No loot',
+      };
+    }
 
     return gifts;
   }
@@ -439,10 +453,11 @@ export class GiftsService {
 
   private async getTonAmount(amount: number, currencyType: 'ton' | 'stars') {
     const currancyRates = await this.currancyService.getCurrancyRates();
+    console.log('currancyRates', currancyRates);
     if (currencyType === 'ton') {
       return amount;
     } else {
-      return amount * currancyRates.stars / currancyRates.ton;
+      return Number((amount * currancyRates.stars * currancyRates.ton).toFixed(2));
     }
   }
 }

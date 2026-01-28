@@ -38,7 +38,7 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
     return (
         <div className={cls.wheelContainer}>
             <div className={cls.infoContainer}>
-                <span>Ожижание</span>
+                <span>Ожидание</span>
             </div>
             <div className={cls.winningTriangle}>
                 <svg  width="31" height="29" viewBox="0 0 31 29" fill="none" xmlns="http://www.w3.org/2000/svg">
