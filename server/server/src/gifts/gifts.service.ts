@@ -135,32 +135,83 @@ export class GiftsService {
     );
 
     const response = await this.axiosInstance.post(url, { amount: amountTon });
-
     const type = getCurrentType(Number(amount));
 
-    const originalGifts = response.data.gifts.slice(0, getCountGifts(amount));
+    const allRawGifts: any[] = response.data.gifts || [];
+
+    let originalGifts: any[] = [];
+
+    // Правила формирования слотов:
+    // 1) amount <= 5: 4 подарка + no-loot, при этом вероятность:
+    //    4 * 5% (подарки) + 80% (no-loot) — реализуем через 20 слотов:
+    //    4 подарка по 1 слоту и 16 слотов no-loot
+    // 2) 10 <= amount < 20: 10 игрушек по 10% (10 слотов, без no-loot)
+    // 3) остальное — старая логика (getCountGifts)
+
+    if (amount <= 5) {
+      const maxGifts = Math.min(4, allRawGifts.length);
+      originalGifts = allRawGifts.slice(0, maxGifts);
+
+      if (onOriginalData) {
+        onOriginalData(originalGifts);
+      }
+
+      const formattedGifts = originalGifts.map((g: any) =>
+        formatGiftItem(g, type === 'secret' ? 'secret' : 'gift'),
+      );
+
+      const slots: any[] = [];
+
+      // Добавляем по одному слоту для каждого доступного подарка
+      for (let i = 0; i < formattedGifts.length; i++) {
+        slots.push(formattedGifts[i]);
+      }
+
+      // Остальные слоты забиваем no-loot, всего 20 слотов
+      const totalSlots = 20;
+      const noLootSlotsCount = Math.max(0, totalSlots - slots.length);
+      for (let i = 0; i < noLootSlotsCount; i++) {
+        slots.push({
+          type: 'no-loot',
+          price: 0,
+          image: '',
+          name: 'No loot',
+        });
+      }
+
+      return slots;
+    }
+
+    if (amount >= 10 && amount < 20) {
+      const desiredSlots = 10;
+      const baseGifts = allRawGifts.slice(0, Math.max(1, Math.min(desiredSlots, allRawGifts.length)));
+
+      // Дублируем подарки, если их меньше 10, чтобы набрать 10 слотов
+      while (baseGifts.length < desiredSlots && allRawGifts.length > 0) {
+        baseGifts.push(allRawGifts[baseGifts.length % allRawGifts.length]);
+      }
+
+      originalGifts = baseGifts;
+
+      if (onOriginalData) {
+        onOriginalData(originalGifts);
+      }
+
+      return originalGifts.map((g: any) =>
+        formatGiftItem(g, type === 'secret' ? 'secret' : 'gift'),
+      );
+    }
+
+    // Дефолтный случай — старая логика
+    originalGifts = allRawGifts.slice(0, getCountGifts(amount));
     
-    // Сохраняем оригинальные данные для Redis
     if (onOriginalData) {
       onOriginalData(originalGifts);
     }
 
-    let gifts = originalGifts.map((g: any) =>
+    return originalGifts.map((g: any) =>
       formatGiftItem(g, type === 'secret' ? 'secret' : 'gift'),
     );
-
-    // При ставке меньше 10 – один из слотов делает "no loot"
-    if (amount < 10 && gifts.length > 0) {
-      const index = Math.floor(Math.random() * gifts.length);
-      gifts[index] = {
-        type: 'no-loot',
-        price: 0,
-        image: '',
-        name: 'No loot',
-      };
-    }
-
-    return gifts;
   }
 
   private async getRawMoneyPrices(amount: number) {
@@ -220,6 +271,12 @@ export class GiftsService {
           if (matchingOriginal) {
             original = matchingOriginal;
           }
+        }
+
+        // Для обычных подарков/денег без originalData пробуем маппить по модулю,
+        // чтобы дубликаты слотов ссылались на реальные исходники
+        if (!original && originalData.length > 0 && item.type !== 'no-loot') {
+          original = originalData[index % originalData.length];
         }
         
         return formatWheelItem(item, original || item);
@@ -306,7 +363,7 @@ export class GiftsService {
       const selectedPrize = wheelItems[randomIndex];
 
       this.logger.debug(
-        `User ${userId} selected prize at index ${randomIndex}: ${selectedPrize.type}`,
+        `User ${userId} selected prize at index ${randomIndex}: ${(selectedPrize as any).type}`,
       );
 
       // Если приз — NFT (есть ownerAddress, который у нас равен sale_address), пытаемся купить его
@@ -346,6 +403,17 @@ export class GiftsService {
       this.logger.debug(
         `User ${userId} paid ${amount} ${currencyType} for the game`,
       );
+
+      // Если выпал no-loot — это пустой слот: только списание, без выигрыша
+      if ((selectedPrize as any).type === 'no-loot') {
+        this.logger.debug(`User ${userId} landed on no-loot slot. Only bet deducted, no prize awarded.`);
+        // Возвращаем минимальный ответ без выигрыша
+        return {
+          type: 'gift',
+          name: 'No loot',
+          price: 0,
+        } as StartGameResponseDto;
+      }
 
       // Обрабатываем выигрыш в зависимости от типа приза
       if (selectedPrize.type === 'money') {

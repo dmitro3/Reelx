@@ -1,7 +1,7 @@
-import { WheelItem, WheelGiftItem, WheelMoneyItem, WheelSecretItem } from '../interfaces/wheel-item.interface';
+import { WheelItem, WheelGiftItem, WheelMoneyItem, WheelSecretItem, WheelNoLootItem } from '../interfaces/wheel-item.interface';
 
 interface GiftItemFormatted {
-  type: 'gift' | 'money' | 'secret';
+  type: 'gift' | 'money' | 'secret' | 'no-loot';
   price: number;
   image: string;
   name: string;
@@ -81,6 +81,13 @@ export const formatWheelItem = (
         currencyType,
       } as WheelSecretItem;
     }
+  }
+
+  // Если это no-loot элемент
+  if ('type' in item && item.type === 'no-loot') {
+    return {
+      type: 'no-loot',
+    } as WheelNoLootItem;
   }
 
   // Если это gift элемент

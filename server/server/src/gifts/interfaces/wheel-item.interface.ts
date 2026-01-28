@@ -39,4 +39,8 @@ export interface WheelSecretItem {
   currencyType?: 'ton' | 'star';
 }
 
-export type WheelItem = WheelGiftItem | WheelMoneyItem | WheelSecretItem;
+export interface WheelNoLootItem {
+  type: 'no-loot';
+}
+
+export type WheelItem = WheelGiftItem | WheelMoneyItem | WheelSecretItem | WheelNoLootItem;
