@@ -17,6 +17,51 @@ interface WheelProps {
     mode: 'normal' | 'mystery' | 'multy';
 }
 
+type WheelGroup = {
+    item: GiftItem;
+    count: number;
+    startIndex: number; // индекс первой записи этой группы в общем массиве
+};
+
+// Группируем элементы по типу+имени+цене и считаем,
+// сколько "записей" приходится на каждую визуальную ячейку колеса.
+const buildWheelGroups = (items: GiftItem[]): WheelGroup[] => {
+    const map = new Map<string, { item: GiftItem; count: number; firstIndex: number }>();
+
+    items.forEach((item, index) => {
+        const key = `${item.type}__${item.name}__${item.price}`;
+        const existing = map.get(key);
+
+        if (existing) {
+            existing.count += 1;
+        } else {
+            map.set(key, {
+                item,
+                count: 1,
+                firstIndex: index,
+            });
+        }
+    });
+
+    // Сортируем группы по первому появлению, чтобы порядок на колесе был предсказуем
+    const sorted = Array.from(map.values()).sort((a, b) => a.firstIndex - b.firstIndex);
+
+    // Проставляем startIndex для каждой группы (накопительная сумма count)
+    const groups: WheelGroup[] = [];
+    let currentStartIndex = 0;
+
+    sorted.forEach(({ item, count }) => {
+        groups.push({
+            item,
+            count,
+            startIndex: currentStartIndex,
+        });
+        currentStartIndex += count;
+    });
+
+    return groups;
+};
+
 const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIndex, mode }: WheelProps) => {
     const {
         wheelRef,
@@ -32,8 +77,14 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
         targetIndex,
     });
 
-    const segmentAngle = calculateSegmentAngle(items.length);
-    const conicGradient = generateConicGradient(items.length);
+    const totalItemsCount = items.length;
+    const groups = buildWheelGroups(items);
+
+    const segmentAngle = totalItemsCount > 0 ? calculateSegmentAngle(totalItemsCount) : 0;
+    const conicGradient = generateConicGradient(
+        totalItemsCount,
+        groups.map((g) => g.count),
+    );
 
     return (
         <div className={cls.wheelContainer}>
@@ -71,12 +122,17 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
                 onMouseDown={handleMouseDown}
                 onTouchStart={handleTouchStart}
             >
-                {items.map((item, index) => {
-                    const { x, y } = calculateSegmentPosition(index, segmentAngle);
+                {groups.map((group, index) => {
+                    // Центр группы в "индексах" базовых сегментов:
+                    // если 8 записей из 10 — то группа занимает 8 сегментов,
+                    // и центр находится посередине их диапазона
+                    const centerIndex = group.startIndex + group.count / 2 - 0.5;
+                    const { x, y } = calculateSegmentPosition(centerIndex, segmentAngle);
+                    const item = group.item;
 
                     return (
                         <div
-                            key={index}
+                            key={`${item.type}-${item.name}-${item.price}-${index}`}
                             className={cls.segmentContent}
                             style={{
                                 position: 'absolute',
