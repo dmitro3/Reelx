@@ -24,13 +24,7 @@ export class AdminController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: AdminLoginDto): Promise<AdminLoginResponse> {
-    try {
-      return await this.adminAuthService.login(loginDto);
-    } catch (error) {
-      // Логируем ошибку для отладки
-      console.error('Login error:', error);
-      throw error;
-    }
+    return this.adminAuthService.login(loginDto);
   }
 
   @Get('validate')
