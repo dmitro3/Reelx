@@ -20,7 +20,6 @@ import { CurrancyModule } from '../libs/common/modules/Currancy/Currancy.module'
     UsersModule,
     GiftsModule,
     PromocodeModule,
-    // Условно импортируем TelegramBotModule только если не отключен
     ...(process.env.DISABLE_TELEGRAM_BOT !== 'true' ? [TelegramBotModule] : []),
   ],
   controllers: [],

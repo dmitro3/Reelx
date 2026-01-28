@@ -13,7 +13,10 @@ import { AdminSettingsRepository } from './repositorys/admin-settings.repository
 
 @Module({
   imports: [
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     RedisModule,
     PrismaModule,
   ],
