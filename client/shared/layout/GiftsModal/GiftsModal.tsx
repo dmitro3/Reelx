@@ -1,13 +1,16 @@
 'use client'
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Image, { StaticImageData } from 'next/image';
 import { eventBus, MODAL_EVENTS } from '@/features/eventBus/eventBus';
 import cls from './GiftsModal.module.scss';
+import TonIcon from '@/assets/ton.svg';
+import StarIcon from '@/assets/star.svg';
+import NoLootIcon from '@/assets/NO_LOOT.svg';
 
 interface GiftItem {
     name: string;
     price?: number;
-    image?: string;
+    image?: string | StaticImageData;
     color?: string;
 }
 
@@ -81,34 +84,48 @@ const GiftsModal = ({ gifts = [] }: GiftsModalProps) => {
                 {/* Сетка подарков */}
                 <div className={cls.giftsGrid}>
                     {modalGifts.length > 0 ? (
-                        modalGifts.map((gift, index) => (
-                            <div 
-                                key={index} 
-                                className={cls.giftCard}
-                                style={{
-                                    background: gift.color 
-                                        ? `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%), ${gift.color}`
-                                        : undefined
-                                }}
-                            >
-                                {gift.image ? (
-                                    <div className={cls.giftImageWrapper}>
-                                        <Image 
-                                            src={gift.image} 
-                                            alt={gift.name}
-                                            width={70}
-                                            height={70}
-                                            className={cls.giftImage}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className={cls.giftImageWrapper}>
-                                        <div className={cls.giftPlaceholder}>🎁</div>
-                                    </div>
-                                )}
-                                <span className={cls.giftName}>{gift.name}</span>
-                            </div>
-                        ))
+                        modalGifts.map((gift, index) => {
+                            let icon: string | StaticImageData | undefined = gift.image;
+
+                            if (!icon) {
+                                if (gift.name === 'TON') {
+                                    icon = TonIcon;
+                                } else if (gift.name === 'STARS') {
+                                    icon = StarIcon;
+                                } else if (gift.name === 'No loot') {
+                                    icon = NoLootIcon;
+                                }
+                            }
+
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={cls.giftCard}
+                                    style={{
+                                        background: gift.color 
+                                            ? `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%), ${gift.color}`
+                                            : undefined
+                                    }}
+                                >
+                                    {icon ? (
+                                        <div className={cls.giftImageWrapper}>
+                                            <Image 
+                                                src={icon} 
+                                                alt={gift.name}
+                                                width={70}
+                                                height={70}
+                                                className={cls.giftImage}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className={cls.giftImageWrapper}>
+                                            <div className={cls.giftPlaceholder}>🎁</div>
+                                        </div>
+                                    )}
+                                    <span className={cls.giftName}>{gift.name}</span>
+                                </div>
+                            );
+                        })
                     ) : (
                         <div className={cls.noGifts}>
                             Пока нет подарков на барабане
