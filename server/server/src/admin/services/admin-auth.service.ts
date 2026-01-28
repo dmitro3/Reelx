@@ -33,6 +33,8 @@ export class AdminAuthService {
     // Проверяем пароль (сравниваем хэш)
     const isPasswordValid = await bcrypt.compare(loginDto.password, adminPasswordHash);
     this.logger.warn('passwords dont compate');
+    this.logger.warn(loginDto.password);
+    this.logger.warn(adminPasswordHash);
 
     if (!isPasswordValid) {
       this.logger.warn(`Failed login attempt with login: ${loginDto.login}`);
