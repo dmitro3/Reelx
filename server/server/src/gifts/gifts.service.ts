@@ -433,6 +433,9 @@ export class GiftsService {
       );
 
       // Запись в user_games при каждом запуске игры
+      this.logger.debug(
+        `Creating game record for user ${userId}: solo, ${amount} ${currencyType}`,
+      );
       await this.giftsRepository.createUserGame({
         userId,
         type: UserGamesType.solo,
