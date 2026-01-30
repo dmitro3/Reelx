@@ -99,6 +99,10 @@ export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
     try {
       const response = await this.getGemsClient.getNftsOnSale(collectionAddress);
 
+
+      if(Math.random() > 0.8) 
+        console.log(JSON.stringify(response));
+
       if (!response.success || !response.response.items) {
         return 0;
       }

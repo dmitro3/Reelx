@@ -16,6 +16,7 @@ import { StartGameResponseDto } from './dto/start-game-response.dto';
 import { UsersService } from '../users/services/users.service';
 import { UserGamesType, GameCurrancy } from '@prisma/client';
 import { CurrancyService } from '../../libs/common/modules/Currancy/services/Currancy.service';
+import { GiftsRepository } from './repositorys/gifts.repository';
 
 @Injectable()
 export class GiftsService {
@@ -28,7 +29,7 @@ export class GiftsService {
     private configService: ConfigService,
     private redisService: RedisService,
     private usersService: UsersService,
-    
+    private giftsRepository: GiftsRepository,
     private currancyService: CurrancyService,
   ) {
     this.nftBuyerUrl = this.configService.get<string>('NFT_BUYER_URL', 'http://localhost:3001');
@@ -431,6 +432,14 @@ export class GiftsService {
         `User ${userId} paid ${amount} ${currencyType} for the game`,
       );
 
+      // Запись в user_games при каждом запуске игры
+      await this.giftsRepository.createUserGame({
+        userId,
+        type: UserGamesType.solo,
+        priceAmount: amount,
+        priceType: currencyType === 'stars' ? GameCurrancy.STARS : GameCurrancy.TON,
+      });
+
       // Если выпал no-loot — это пустой слот: только списание, без выигрыша
       if ((selectedPrize as any).type === 'no-loot') {
         this.logger.debug(`User ${userId} landed on no-loot slot. Only bet deducted, no prize awarded.`);
@@ -469,13 +478,6 @@ export class GiftsService {
           collectionAddress: giftPrize.collection.address,
           image: giftPrize.image,
           price: giftPrize.price,
-        });
-
-        await this.usersService.createUserGame({
-          userId,
-          type: UserGamesType.solo,
-          priceAmount: giftPrize.price,
-          priceType: GameCurrancy.TON,
         });
 
         this.logger.debug(
