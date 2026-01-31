@@ -76,3 +76,15 @@ export interface NftOnSaleData {
   saleAddress?: string; // contractAddress из sale
   lastUpdated: number;
 }
+
+/** Листинг NFT только с контрактом продажи типа nft_sale_getgems_v4 (TonApi + фильтр) */
+export interface GetGemsNftListing {
+  nftAddress: string;
+  saleContractAddress: string;
+  ownerAddress: string;
+  marketplace: 'getgems_v4';
+  price: { amount: string; token: 'TON' };
+  collection?: { name: string; address: string };
+  metadata?: { name: string; image: string; description?: string };
+  lastUpdated: Date;
+}

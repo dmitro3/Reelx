@@ -2,7 +2,10 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/commo
 import { GetGemsApiClient } from './getgems-api.client';
 import { RedisService } from '../redis/redis.service';
 import { GiftsSyncService } from './gifts-sync.service';
-import { NftOnSaleData, NftOnSale } from './interfaces/getgems-response.interface';
+import { NftOnSaleData, NftOnSale, GetGemsNftListing } from './interfaces/getgems-response.interface';
+import { isGetGemsV4SaleFromGetGemsApi } from './getgems-v4.filter';
+import { TonApiClient } from '../tonapi/tonapi.client';
+import { isGetGemsV4Sale, tonApiNftToGetGemsListing } from './getgems-v4.filter';
 
 @Injectable()
 export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
@@ -17,6 +20,7 @@ export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
     private readonly getGemsClient: GetGemsApiClient,
     private readonly redisService: RedisService,
     private readonly giftsSyncService: GiftsSyncService,
+    private readonly tonApiClient: TonApiClient,
   ) {}
 
   async onModuleInit() {
@@ -100,21 +104,24 @@ export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
       const response = await this.getGemsClient.getNftsOnSale(collectionAddress);
 
 
-      if(Math.random() > 0.8) 
-        console.log(JSON.stringify(response));
-
       if (!response.success || !response.response.items) {
         return 0;
       }
 
       const nfts = response.response.items;
       
+      let saved = 0;
       for (const nft of nfts) {
+        if (!isGetGemsV4SaleFromGetGemsApi(nft.sale)) {
+          this.logger.debug(`Skipping NFT ${nft.address}: not nft_sale_getgems_v4`);
+          continue;
+        }
         await this.saveNftToRedis(nft, collectionName);
+        saved++;
       }
 
-      this.logger.debug(`Synced ${nfts.length} NFTs for collection ${collectionAddress}`);
-      return nfts.length;
+      this.logger.debug(`Synced ${saved}/${nfts.length} getgems_v4 NFTs for collection ${collectionAddress}`);
+      return saved;
     } catch (error) {
       throw error;
     }
@@ -152,6 +159,74 @@ export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.error(`Error saving NFT ${nft.address} to Redis: ${error.message}`);
     }
+  }
+
+  /**
+   * Сохраняет листинг GetGems v4 (из TonApi) в Redis.
+   * Обрабатываем только контракты nft_sale_getgems_v4.
+   */
+  private async saveGetGemsListingToRedis(listing: GetGemsNftListing): Promise<void> {
+    try {
+      const priceInTon = Number(listing.price.amount) / 1_000_000_000;
+      await this.redisService.zadd(this.ZSET_KEY, priceInTon, listing.nftAddress);
+      const nftKey = `${this.NFTS_KEY_PREFIX}${listing.nftAddress}`;
+      const stored = { ...listing, lastUpdated: listing.lastUpdated.toISOString() };
+      await this.redisService.set(nftKey, JSON.stringify(stored));
+    } catch (error) {
+      this.logger.error(`Error saving GetGems listing ${listing.nftAddress}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Обновление одного NFT из TonApi: GET /v2/nfts/{address}.
+   * Сохраняет только если sale — nft_sale_getgems_v4.
+   */
+  async refreshNftFromTonApi(nftAddress: string): Promise<GetGemsNftListing | null> {
+    try {
+      const item = await this.tonApiClient.getNftByAddress(nftAddress);
+      if (!item || !item.sale || !isGetGemsV4Sale(item.sale)) {
+        return null;
+      }
+      const listing = tonApiNftToGetGemsListing(item);
+      if (listing) {
+        await this.saveGetGemsListingToRedis(listing);
+        return listing;
+      }
+      return null;
+    } catch (error: any) {
+      this.logger.warn(`Refresh NFT from TonApi ${nftAddress}: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Синхронизация из TonApi: для каждого аккаунта получаем NFT,
+   * фильтруем только nft_sale_getgems_v4 (sale.marketplace/getgems или sale.address 0:210...),
+   * сохраняем как GetGemsNftListing.
+   */
+  async syncFromTonApi(accountAddresses: string[]): Promise<{ total: number; saved: number }> {
+    let total = 0;
+    let saved = 0;
+    for (const accountAddress of accountAddresses) {
+      try {
+        const items = await this.tonApiClient.getAccountNfts(accountAddress);
+        total += items.length;
+        for (const item of items) {
+          if (!item.sale || !isGetGemsV4Sale(item.sale)) {
+            continue;
+          }
+          const listing = tonApiNftToGetGemsListing(item);
+          if (listing) {
+            await this.saveGetGemsListingToRedis(listing);
+            saved++;
+          }
+        }
+        await new Promise((r) => setTimeout(r, 300));
+      } catch (error: any) {
+        this.logger.warn(`TonApi sync for account ${accountAddress}: ${error.message}`);
+      }
+    }
+    return { total, saved };
   }
 
   // Публичные методы для получения NFT из Redis
@@ -246,16 +321,38 @@ export class NftsSyncService implements OnModuleInit, OnModuleDestroy {
     try {
       const nftKey = `${this.NFTS_KEY_PREFIX}${nftAddress}`;
       const data = await this.redisService.get(nftKey);
-      
+
       if (!data) {
         return null;
       }
 
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (parsed.marketplace === 'getgems_v4') {
+        return this.getGemsListingToNftOnSaleData(parsed);
+      }
+      return parsed;
     } catch (error) {
       this.logger.error(`Error getting NFT by address: ${error.message}`);
       return null;
     }
+  }
+
+  private getGemsListingToNftOnSaleData(listing: GetGemsNftListing & { lastUpdated?: string }): NftOnSaleData {
+    const priceAmount = listing.price?.amount ?? '0';
+    const priceInTon = Number(priceAmount) / 1_000_000_000;
+    return {
+      nftAddress: listing.nftAddress,
+      collectionAddress: listing.collection?.address ?? '',
+      ownerAddress: listing.ownerAddress,
+      actualOwnerAddress: listing.ownerAddress,
+      image: listing.metadata?.image ?? '',
+      name: listing.metadata?.name ?? '',
+      description: listing.metadata?.description ?? '',
+      priceInTon,
+      fullPrice: priceAmount,
+      saleAddress: listing.saleContractAddress,
+      lastUpdated: typeof listing.lastUpdated === 'string' ? new Date(listing.lastUpdated).getTime() : (listing.lastUpdated as Date)?.getTime?.() ?? Date.now(),
+    };
   }
 
   async getTotalNftsCount(): Promise<number> {
