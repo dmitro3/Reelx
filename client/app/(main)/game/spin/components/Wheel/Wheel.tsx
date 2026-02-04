@@ -117,7 +117,7 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
                 style={{
                     background: conicGradient,
                     transform: `rotate(${rotation}deg)`,
-                    transition: isSpinning ? 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                    transition: 'none',
                 }}
                 onMouseDown={handleMouseDown}
                 onTouchStart={handleTouchStart}
