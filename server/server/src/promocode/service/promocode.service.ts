@@ -26,7 +26,11 @@ export class PromocodeService {
       promo.id,
     );
 
-    if (userPromocode.countOfUse >= promo.countUser || !promo.isInfinity) {
+    if (
+      !promo.isInfinity &&
+      userPromocode != null &&
+      userPromocode.countOfUse >= promo.countUser
+    ) {
       throw new BadRequestException('Промокод уже использован');
     }
 
