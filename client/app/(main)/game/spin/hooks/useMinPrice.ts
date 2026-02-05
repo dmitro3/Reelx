@@ -3,8 +3,8 @@ import { giftsService, MinPriceResponse } from '@/entites/gifts/api/api';
 
 const MIN_STAKE_TON = 5;
 const STEP_TON = 15;
-const MIN_STAKE_STARS = 150;
-const STEP_STARS = 150;
+const MIN_STAKE_STARS = 100;
+const STEP_STARS = 100;
 
 export const useMinPrice = () => {
     const [minPrice, setMinPrice] = useState<MinPriceResponse | null>(null);
