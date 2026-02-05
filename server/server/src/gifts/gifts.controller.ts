@@ -5,6 +5,7 @@ import { WithdrawNftDto } from './dto/withdraw-nft.dto';
 import { JwtAuthGuard } from '../../libs/common/guard/jwt-auth.guard.guard';
 import { CurrentUser } from '../../libs/common/decorators/current-user.decorator';
 import { WithdrawGiftsService } from './withdraw-gifts.service';
+import { BuyNFTDto } from './dto/buy-nft.dto';
 
 class WithdrawGiftsDto {
   giftIds: string[];
@@ -52,5 +53,14 @@ export class GiftsController {
       body.giftId,
       body.walletAddress,
     );
+  }
+
+  @Post('/buy-nft')
+  @UseGuards(JwtAuthGuard)
+  async buyNFT(
+    @CurrentUser() userId: string,
+    @Body() body: BuyNFTDto,
+  ) {
+    return this.giftsService.buyNFT(userId, body.nftId);
   }
 }

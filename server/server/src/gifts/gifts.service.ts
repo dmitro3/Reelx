@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, HttpException, HttpStatus, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { getCurrentType } from './helpers/getCurrectType.helper';
@@ -549,6 +549,27 @@ export class GiftsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async buyNFT(userId: string, nftId: string) {
+    const gift = await this.usersService.findUserGiftById(userId, nftId);
+    if (!gift) {
+      throw new BadRequestException('Подарок не найден');
+    }
+    if (gift.isOut) {
+      throw new BadRequestException('Подарок уже продан');
+    }
+    const price = gift.price ?? 0;
+    const refundAmount = Math.round(price * 0.8 * 100) / 100; // 80% от стоимости
+
+    await this.usersService.markUserGiftsAsOut(userId, [nftId]);
+    await this.usersService.updateTonBalance(userId, refundAmount);
+
+    return {
+      success: true,
+      refundAmount,
+      giftName: gift.giftName,
+    };
   }
 
   private async getTonAmount(amount: number, currencyType: 'ton' | 'stars') {

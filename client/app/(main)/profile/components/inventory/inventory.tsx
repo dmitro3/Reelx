@@ -11,17 +11,14 @@ import { GameDataModal } from '../GameDataModal/GameDataModal';
 import { NftModal } from '../NftModal/NftModal';
 
 export const Inventory = () => {
-    const { activeTab, setActiveTab, historyGames, inventoryGifts, isLoading } = useInventory();
+    const { activeTab, setActiveTab, historyGames, inventoryGifts, isLoading, refetchGifts } = useInventory();
     const { isOpen: isGameModalOpen, selectedGame, openModal: openGameModal, closeModal: closeGameModal } = useGameDataModal();
     const { isOpen: isNftModalOpen, selectedNft, openModal: openNftModal, closeModal: closeNftModal } = useNftModal();
 
     const modalData = selectedGame ? prepareGameModalData(selectedGame) : null;
 
-    const handleSellNft = (nft: typeof selectedNft) => {
-        if (nft) {
-            console.log('Selling NFT:', nft);
-            // TODO: Implement sell logic
-        }
+    const handleAfterNftAction = () => {
+        refetchGifts();
     };
 
     return (
@@ -96,7 +93,8 @@ export const Inventory = () => {
                 isOpen={isNftModalOpen}
                 onClose={closeNftModal}
                 nft={selectedNft}
-                onSell={handleSellNft}
+                onSell={handleAfterNftAction}
+                onWithdraw={handleAfterNftAction}
             />
         </div>
     );

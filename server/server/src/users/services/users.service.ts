@@ -88,6 +88,14 @@ export class UsersService {
         }));
     }
 
+    async findUserGiftById(userId: string, giftId: string) {
+        return this.userRepository.findUserGiftById(userId, giftId);
+    }
+
+    async markUserGiftsAsOut(userId: string, giftIds: string[]) {
+        return this.userRepository.markUserGiftsAsOut(userId, giftIds);
+    }
+
     async createUserGame(data: {
         userId: string;
         type: UserGamesType;

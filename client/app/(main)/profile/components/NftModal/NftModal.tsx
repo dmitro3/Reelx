@@ -20,6 +20,8 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
     const tonConnectUI = useContext(TonConnectUIContext);
     const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [withdrawError, setWithdrawError] = useState<string | null>(null);
+    const [isSelling, setIsSelling] = useState(false);
+    const [sellError, setSellError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -33,11 +35,22 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
         };
     }, [isOpen]);
 
-    const handleSell = () => {
-        if (nft && onSell) {
+    const handleSell = async () => {
+        if (!nft || !onSell) return;
+
+        setIsSelling(true);
+        setSellError(null);
+
+        try {
+            await nftWithdrawService.buyNft(nft.id);
             onSell(nft);
+            onClose();
+        } catch (error: any) {
+            const message = error.response?.data?.message ?? error.message ?? 'Ошибка при продаже NFT';
+            setSellError(message);
+        } finally {
+            setIsSelling(false);
         }
-        onClose();
     };
 
     const handleWithdraw = async () => {
@@ -113,16 +126,25 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
                     </button>
                 ) : (
                     <>
-                        <button className={cls.sellButton} onClick={handleSell}>
-                            <span>Продать за</span>
-                            <div className={cls.priceTag}>
-                                <svg width="11" height="11" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="10" cy="10" r="10" fill="#0098EA"/>
-                                    <path d="M13.2515 5.18506H6.74827C5.55257 5.18506 4.7947 6.47487 5.39626 7.51757L9.40979 14.4741C9.6717 14.9284 10.328 14.9284 10.59 14.4741L14.6043 7.51757C15.205 6.47653 14.4472 5.18506 13.2523 5.18506H13.2515ZM9.40652 12.388L8.53245 10.6963L6.42338 6.9242C6.28425 6.68277 6.4561 6.37338 6.74746 6.37338H9.40571V12.3888L9.40652 12.388ZM13.5747 6.92339L11.4665 10.6971L10.5924 12.388V6.37257H13.2507C13.542 6.37257 13.7139 6.68195 13.5747 6.92339Z" fill="white"/>
-                                </svg>
-                                <span>{sellPrice}</span>
-                            </div>
+                        <button
+                            className={cls.sellButton}
+                            onClick={handleSell}
+                            disabled={isSelling}
+                        >
+                            <span>{isSelling ? 'Продаём...' : 'Продать за'}</span>
+                            {!isSelling && (
+                                <div className={cls.priceTag}>
+                                    <svg width="11" height="11" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="10" cy="10" r="10" fill="#0098EA"/>
+                                        <path d="M13.2515 5.18506H6.74827C5.55257 5.18506 4.7947 6.47487 5.39626 7.51757L9.40979 14.4741C9.6717 14.9284 10.328 14.9284 10.59 14.4741L14.6043 7.51757C15.205 6.47653 14.4472 5.18506 13.2523 5.18506H13.2515ZM9.40652 12.388L8.53245 10.6963L6.42338 6.9242C6.28425 6.68277 6.4561 6.37338 6.74746 6.37338H9.40571V12.3888L9.40652 12.388ZM13.5747 6.92339L11.4665 10.6971L10.5924 12.388V6.37257H13.2507C13.542 6.37257 13.7139 6.68195 13.5747 6.92339Z" fill="white"/>
+                                    </svg>
+                                    <span>{sellPrice}</span>
+                                </div>
+                            )}
                         </button>
+                        {sellError && (
+                            <div className={cls.errorMessage}>{sellError}</div>
+                        )}
 
                         <button 
                             className={cls.withdrawButton} 
