@@ -23,8 +23,8 @@ RUN npx prisma generate --schema=./libs/infrustructure/prisma/schema.prisma
 # Copy all source files (excluding what's in .dockerignore)
 COPY . .
 
-# Build the application
-RUN npm run prisma:migrate && npm run build || (echo "Build failed!" && exit 1)
+# Build the application (migrations run at container startup via docker-entrypoint.sh)
+RUN npm run build || (echo "Build failed!" && exit 1)
 
 # Verify build output
 RUN ls -la dist/ || (echo "Build failed - dist directory not found" && exit 1)
