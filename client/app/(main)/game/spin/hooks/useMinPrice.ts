@@ -1,46 +1,62 @@
 import { useState, useEffect } from 'react';
-import { giftsService, MinPriceResponse } from '@/entites/gifts/api/api';
-
-const MIN_STAKE_TON = 5;
-const STEP_TON = 15;
-const MIN_STAKE_STARS = 100;
-const STEP_STARS = 100;
+import { getCurrancyPrice } from '../helpers/getCurrencyPrice.helper';
 
 export const useMinPrice = () => {
-    const [minPrice, setMinPrice] = useState<MinPriceResponse | null>(null);
+    const [minStakeTon, setMinStakeTon] = useState<number>(5);
+    const [stepTon, setStepTon] = useState<number>(5);
+    const [minStakeStars, setMinStakeStars] = useState<number>(100);
+    const [stepStars, setStepStars] = useState<number>(100);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
 
-        const fetchMinPrice = async () => {
+        const fetchRatesAndCalc = async () => {
             try {
-                const data = await giftsService.getMinPrice();
+                const rates = await getCurrancyPrice();
+                if (!rates || !rates.tonPrice || !rates.starPrice) {
+                    throw new Error('Invalid currency rates');
+                }
+
+                const { tonPrice, starPrice } = rates;
+
+                const baseTonStake = 5;
+                const tonStep = 5;
+
+                const starsPerTon = tonPrice / starPrice;
+                const baseStarsRaw = baseTonStake * starsPerTon;
+                const baseStars = Math.ceil(baseStarsRaw / 100) * 100 || 100;
+
                 if (!cancelled) {
-                    setMinPrice(data);
+                    setMinStakeTon(baseTonStake);
+                    setStepTon(tonStep);
+                    setMinStakeStars(baseStars);
+                    setStepStars(baseStars);
                 }
             } catch (error) {
-                console.error('Failed to fetch min price:', error);
+                console.error('Failed to fetch currency price for bets:', error);
                 if (!cancelled) {
-                    setMinPrice({ ton: MIN_STAKE_TON, stars: MIN_STAKE_STARS });
+                    setMinStakeTon(5);
+                    setStepTon(5);
+                    setMinStakeStars(100);
+                    setStepStars(100);
                 }
             } finally {
                 if (!cancelled) setIsLoading(false);
             }
         };
 
-        fetchMinPrice();
+        fetchRatesAndCalc();
         return () => {
             cancelled = true;
         };
     }, []);
 
     return {
-        minPrice,
         isLoading,
-        minStakeTon: MIN_STAKE_TON,
-        stepTon: STEP_TON,
-        minStakeStars: MIN_STAKE_STARS,
-        stepStars: STEP_STARS,
+        minStakeTon,
+        stepTon,
+        minStakeStars,
+        stepStars,
     };
 };

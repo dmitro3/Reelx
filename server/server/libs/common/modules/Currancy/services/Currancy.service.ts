@@ -1,13 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { RedisService } from "../../../../infrustructure/redis/redis.service";
 import { getCurrancyRates } from "../../../tools/getStarsPriceUsdt.tool";
+import { getTonPriceUsdt } from '../../../tools/getTonPriceUsdt.tool'
 
 @Injectable()
 export class CurrancyService {
 
     constructor(
         private readonly redisService: RedisService,
-    ) {}
+    ) {
+        setTimeout(() => this.getCurrancyRates().then(console.log), 5000)
+    }
    
     async getCurrancyRates() {
         const tonPriceFromCache = await this.redisService.get('ton_price_usdt');
@@ -20,11 +23,12 @@ export class CurrancyService {
             };
         }
         const currancyFromApi = await getCurrancyRates();
-        await this.redisService.set('ton_price_usdt', JSON.stringify(currancyFromApi.ton), 60 * 60 * 24);
+        const tonPrice = await getTonPriceUsdt();
+        await this.redisService.set('ton_price_usdt', JSON.stringify(tonPrice.toFixed(2)), 60 * 60 * 24);
         await this.redisService.set('stars_price_usdt', JSON.stringify(currancyFromApi.stars), 60 * 60 * 24);
 
         return {
-            ton: currancyFromApi.ton,
+            ton: Number(tonPrice.toFixed(2)),
             stars: currancyFromApi.stars,
         };
     }

@@ -1,5 +1,5 @@
 export const configPrices = {
     0: 'common',
-    10:'multi',
+    20:'multi',
     50:'secret'
 }

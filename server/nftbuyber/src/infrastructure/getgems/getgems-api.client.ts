@@ -26,12 +26,20 @@ export class GetGemsApiClient {
     });
   }
 
-  async getGiftsCollections(cursor?: string): Promise<GetGemsCollectionsResponse> {
+  async getGiftsCollections(after?: string, limit: number = 10): Promise<GetGemsCollectionsResponse> {
     try {
-      this.logger.debug(`Fetching gifts collections${cursor ? ` with cursor: ${cursor}` : ''}`);
+      this.logger.debug(
+        `Fetching gifts collections${after ? ` with after: ${after}` : ''} (limit: ${limit})`,
+      );
       
       const response = await this.axiosInstance.get<GetGemsCollectionsResponse>(
-        '/gifts/collections'
+        '/gifts/collections',
+        {
+          params: {
+            ...(after ? { after } : {}),
+            limit,
+          },
+        },
       );
 
       return response.data;
@@ -47,15 +55,37 @@ export class GetGemsApiClient {
 
   async getAllGiftsCollections(): Promise<GiftCollection[]> {
     try {
-      const response = await this.getGiftsCollections();
-      
-      if (response.success && response.response.items) {
-        this.logger.log(`Successfully fetched ${response.response.items.length} gift collections`);
-        return response.response.items;
+      const limit = 10;
+      const maxTotal = 200;
+
+      const all: GiftCollection[] = [];
+      let after: string | undefined = undefined;
+
+      while (all.length < maxTotal) {
+        const response = await this.getGiftsCollections(after, limit);
+
+        const items = response?.response?.items ?? [];
+        if (!response.success) {
+          this.logger.warn('GetGems API returned success=false while fetching collections');
+          break;
+        }
+
+        if (!Array.isArray(items) || items.length === 0) {
+          this.logger.log(`No more collections returned (total: ${all.length})`);
+          break;
+        }
+
+        all.push(...items.slice(0, maxTotal - all.length));
+        after = response.response.cursor ?? undefined;
+
+        if (!after) {
+          this.logger.log(`Cursor is null, stop paging (total: ${all.length})`);
+          break;
+        }
       }
 
-      this.logger.warn('GetGems API returned success but no items');
-      return [];
+      this.logger.log(`Successfully fetched ${all.length} gift collections (paged)`);
+      return all;
     } catch (error) {
       this.logger.error(`Error fetching all gifts collections: ${error.message}`);
       throw error;
