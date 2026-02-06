@@ -11,7 +11,6 @@ export default function SpinPage() {
         currency,
         toggleCurrency,
         wheelItems,
-        isLoadingGifts,
         rolls,
         pricePerRoll,
         totalPrice,

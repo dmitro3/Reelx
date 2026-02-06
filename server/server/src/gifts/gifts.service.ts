@@ -642,7 +642,13 @@ export class GiftsService {
     if (currencyType === 'ton') {
       return amount;
     } else {
-      return Number((amount * currancyRates.stars * currancyRates.ton).toFixed(2));
+      // amount приходит в STARS:
+      // stars * (цена STARS в USD) / (цена TON в USD) = эквивалент в TON
+      const tonAmount =
+        currancyRates.ton > 0
+          ? (amount * currancyRates.stars) / currancyRates.ton
+          : amount;
+      return Number(tonAmount.toFixed(2));
     }
   }
 }
