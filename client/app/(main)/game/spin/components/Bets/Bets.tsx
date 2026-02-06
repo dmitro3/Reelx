@@ -17,6 +17,7 @@ interface BetsProps {
     pricePerRoll: number;
     totalPrice: number;
     minStake?: number;
+    mode: 'normal' | 'multy' | 'mystery';
     giftCount: number;
     isSpinning: boolean;
     canPlay: boolean;
@@ -33,6 +34,7 @@ const Bets = ({
     pricePerRoll,
     totalPrice,
     minStake = 1,
+    mode,
     giftCount,
     isSpinning,
     canPlay,
@@ -91,12 +93,12 @@ const Bets = ({
 
                 <div className={cls.rollSelector}>
                     
-                    {(currency === 'stars' && totalPrice > 50 || currency === 'ton' && totalPrice > 10) && (
+                    {mode === 'multy' && (
                         <div className={`${cls.currencyBadge} ${cls.multyBadge}`}>
                             Multy
                         </div>
                     )}
-                    {(currency === 'ton' && totalPrice > 50 || currency === 'stars' && totalPrice > 250) && (
+                    {mode === 'mystery' && (
                         <div className={`${cls.currencyBadge} ${cls.mysteryBadge}`}>
                             Mystery
                         </div>
