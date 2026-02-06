@@ -2,7 +2,7 @@
 const url = 'https://tonapi.io/v2/rates?tokens=ton&currencies=usd';
 
 
-export const getTonPriceUsdt = async (): Promise<number> => {
+export const getTonPriceUsdt = async () => {
     try {
         const response = await fetch(String(url));
         const data = await response.json();
