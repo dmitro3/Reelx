@@ -113,7 +113,18 @@ export const useGameResult = () => {
 
     const handleGameComplete = useCallback((result: GameResult) => {
         console.log('Игра завершена:', result);
-        
+
+        const isNoLoot = result.selectedItem.type === 'no-loot' || result.selectedItem.name === 'No loot';
+        if (isNoLoot) {
+            setStartGameState({
+                prize: null,
+                targetIndex: null,
+                isLoading: false,
+                error: null,
+            });
+            return;
+        }
+
         // Открываем модальное окно с результатом
         eventBus.emit(MODAL_EVENTS.OPEN_WIN_MODAL, {
             selectedItem: {

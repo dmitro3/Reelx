@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import { eventBus, MODAL_EVENTS } from '@/features/eventBus/eventBus';
 import cls from './GiftsModal.module.scss';
@@ -21,6 +21,17 @@ interface GiftsModalProps {
 const GiftsModal = ({ gifts = [] }: GiftsModalProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [modalGifts, setModalGifts] = useState<GiftItem[]>(gifts);
+    const listRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!listRef.current) return;
+        
+        const item = listRef.current.querySelector('.giftCard:last-child');
+        
+        if(!item) return;
+        
+        listRef.current.style.minHeight = `${item.getBoundingClientRect().height * Math.floor(modalGifts.length / 3 + 20)}px`;
+    }, [modalGifts]);
 
     useEffect(() => {
         const handleOpenModal = (items: GiftItem[]) => {
@@ -129,7 +140,12 @@ const GiftsModal = ({ gifts = [] }: GiftsModalProps) => {
                                             <div className={cls.giftPlaceholder}>🎁</div>
                                         </div>
                                     )}
-                                    <span className={cls.giftName}>{gift.name}</span>
+                                    <span className={cls.giftName}>{
+                                        <>
+                                            <p className={cls.giftNameTitle}>{gift.name.split('#')[0]}</p>
+                                            <p className={cls.giftNameSubtitle}>{gift.name.split('#')[1]}</p>
+                                        </>
+                                    }</span>
                                 </div>
                             );
                         })
