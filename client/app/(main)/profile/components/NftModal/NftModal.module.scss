@@ -92,6 +92,23 @@
     color: #FFFFFF;
     text-align: center;
     line-height: 1.22;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+
+    .nftNameTitle {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .nftNameSubtitle {
+        display: block;
+        opacity: 0.8;
+    }
 }
 
 .textBlock {
@@ -131,6 +148,23 @@
     color: #FFFFFF;
     line-height: 1.22;
     opacity: 0.8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+
+    .subtitleTitle {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .subtitleNumber {
+        display: block;
+        opacity: 0.9;
+    }
 }
 
 .actions {

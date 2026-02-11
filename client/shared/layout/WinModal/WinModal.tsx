@@ -99,7 +99,16 @@ const WinModal = () => {
                                 <div className={cls.prizePlaceholder}>🎁</div>
                             </div>
                         )}
-                        <div className={cls.giftName}>{selectedItem.name}</div>
+                        <div className={cls.giftName}>
+                            {selectedItem.name.includes('#') ? (
+                                <>
+                                    <span className={cls.giftNameTitle}>{selectedItem.name.split('#')[0]}</span>
+                                    <span className={cls.giftNameSubtitle}>#{selectedItem.name.split('#')[1]}</span>
+                                </>
+                            ) : (
+                                <span className={cls.giftNameTitle}>{selectedItem.name}</span>
+                            )}
+                        </div>
                     </>
                 ) : (
                     <>

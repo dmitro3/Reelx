@@ -113,12 +113,30 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
                         <div className={cls.nftPlaceholder}>🎁</div>
                     )}
                 </div>
-                <div className={cls.nftName}>{nft.giftName}</div>
+                <div className={cls.nftName}>
+                    {nft.giftName.includes('#') ? (
+                        <>
+                            <span className={cls.nftNameTitle}>{nft.giftName.split('#')[0]}</span>
+                            <span className={cls.nftNameSubtitle}>#{nft.giftName.split('#')[1]}</span>
+                        </>
+                    ) : (
+                        <span className={cls.nftNameTitle}>{nft.giftName}</span>
+                    )}
+                </div>
             </div>
 
             <div className={cls.textBlock}>
                 <h2 className={cls.title}>Ваш NFT</h2>
-                <p className={cls.subtitle}>{nft.giftName}</p>
+                <p className={cls.subtitle}>
+                    {nft.giftName.includes('#') ? (
+                        <>
+                            <span className={cls.subtitleTitle}>{nft.giftName.split('#')[0]}</span>
+                            <span className={cls.subtitleNumber}>#{nft.giftName.split('#')[1]}</span>
+                        </>
+                    ) : (
+                        <span className={cls.subtitleTitle}>{nft.giftName}</span>
+                    )}
+                </p>
             </div>
 
             <div className={cls.actions}>

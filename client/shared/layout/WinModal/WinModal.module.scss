@@ -95,6 +95,23 @@
     color: #FFFFFF;
     text-align: center;
     line-height: 1.22;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+
+    .giftNameTitle {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .giftNameSubtitle {
+        display: block;
+        opacity: 0.8;
+    }
 }
 
 // Win Text

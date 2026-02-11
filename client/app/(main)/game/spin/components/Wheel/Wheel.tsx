@@ -160,7 +160,16 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
                                     className={cls.segmentImage}
                                 />
                             ) : (
-                                <span className={cls.segmentText}>{item.name}</span>
+                                <span className={cls.segmentText}>
+                                    {item.name.includes('#') ? (
+                                        <>
+                                            <span className={cls.segmentTextTitle}>{item.name.split('#')[0]}</span>
+                                            <span className={cls.segmentTextSubtitle}>#{item.name.split('#')[1]}</span>
+                                        </>
+                                    ) : (
+                                        <span className={cls.segmentTextTitle}>{item.name}</span>
+                                    )}
+                                </span>
                             )}
                         </div>
                     );

@@ -96,6 +96,23 @@
     text-align: center;
     color: #ffffff;
     margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+
+    .giftNameTitle {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .giftNameSubtitle {
+        display: block;
+        opacity: 0.8;
+    }
 }
 
 .giftPrice {

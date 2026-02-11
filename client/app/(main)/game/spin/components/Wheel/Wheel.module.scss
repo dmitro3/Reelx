@@ -74,11 +74,29 @@
 }
 
 .segmentText {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    line-height: 1.2;
+
+    .segmentTextTitle {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 50px;
+    }
+
+    .segmentTextSubtitle {
+        display: block;
+        font-size: 10px;
+        opacity: 0.9;
+    }
 }
 
 .winningTriangle {

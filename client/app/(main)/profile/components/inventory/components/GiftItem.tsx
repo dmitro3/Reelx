@@ -24,7 +24,16 @@ export const GiftItem: React.FC<GiftItemProps> = ({ gift, onClick }) => {
                     className={cls.nftImage}
                 />
             </div>
-            <div className={cls.giftName}>{gift.giftName}</div>
+            <div className={cls.giftName}>
+                {gift.giftName.includes('#') ? (
+                    <>
+                        <span className={cls.giftNameTitle}>{gift.giftName.split('#')[0]}</span>
+                        <span className={cls.giftNameSubtitle}>#{gift.giftName.split('#')[1]}</span>
+                    </>
+                ) : (
+                    <span className={cls.giftNameTitle}>{gift.giftName}</span>
+                )}
+            </div>
             {gift.price !== undefined && (
                 <div className={cls.giftPrice}>
                     <Image src={tonIcon} alt="TON" width={10} height={10} />
