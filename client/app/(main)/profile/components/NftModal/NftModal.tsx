@@ -101,19 +101,17 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
             <div className={cls.background} />
 
             <div className={cls.nftCard}>
-                <div className={cls.nftImageWrapper}>
-                    {nft.image ? (
-                        <Image 
-                            src={nft.image} 
-                            alt={nft.giftName}
-                            width={100}
-                            height={100}
-                            className={cls.nftImage}
-                        />
-                    ) : (
-                        <div className={cls.nftPlaceholder}>🎁</div>
-                    )}
-                </div>
+                {nft.image ? (
+                    <Image 
+                        src={nft.image} 
+                        alt={nft.giftName}
+                        width={167}
+                        height={191}
+                        className={cls.nftImage}
+                    />
+                ) : (
+                    <div className={cls.nftPlaceholder}>🎁</div>
+                )}
                 <div className={cls.nftName}>
                     {nft.giftName.includes('#') ? (
                         <>

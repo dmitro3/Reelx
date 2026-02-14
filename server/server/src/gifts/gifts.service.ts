@@ -525,9 +525,8 @@ export class GiftsService {
         );
       } else if (selectedPrize.type === 'gift') {
         const giftPrize = selectedPrize as WheelGiftItem;
-        
-        // Создаем запись в UserGifts
-        await this.usersService.createUserGift({
+
+        const createdGift = await this.usersService.createUserGift({
           userId,
           giftName: giftPrize.name,
           giftAddress: giftPrize.address,
@@ -539,6 +538,11 @@ export class GiftsService {
         this.logger.debug(
           `User ${userId} won gift: ${giftPrize.name}`,
         );
+
+        return {
+          ...formatMinimalPrize(selectedPrize),
+          giftId: createdGift.id,
+        };
       } else if (selectedPrize.type === 'secret') {
         const secretPrize = selectedPrize as WheelSecretItem;
         
@@ -573,8 +577,7 @@ export class GiftsService {
             );
           }
 
-          // Создаем запись в UserGifts
-          await this.usersService.createUserGift({
+          const createdGift = await this.usersService.createUserGift({
             userId,
             giftName: secretPrize.name,
             giftAddress: secretPrize.address,
@@ -586,6 +589,11 @@ export class GiftsService {
           this.logger.debug(
             `User ${userId} won secret gift: ${secretPrize.name}`,
           );
+
+          return {
+            ...formatMinimalPrize(selectedPrize),
+            giftId: createdGift.id,
+          };
         }
       }
 

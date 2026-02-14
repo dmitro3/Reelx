@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { eventBus, MODAL_EVENTS } from '@/features/eventBus/eventBus';
 import { giftsService } from '@/entites/gifts/api/api';
 import { GiftItem } from '@/entites/gifts/interfaces/giftItem.interface';
@@ -24,6 +24,7 @@ export const useGameResult = () => {
         isLoading: false,
         error: null,
     });
+    const giftIdRef = useRef<string | null>(null);
 
     const startGame = useCallback(async (wheelItems: GiftItem[]): Promise<number | null> => {
         if (wheelItems.length === 0) {
@@ -78,6 +79,7 @@ export const useGameResult = () => {
 
             if (targetIndex === -1) {
                 console.warn('Prize not found in wheel items, using random index');
+                giftIdRef.current = null;
                 const randomIndex = Math.floor(Math.random() * wheelItems.length);
                 setStartGameState({
                     prize: wheelItems[randomIndex],
@@ -87,6 +89,8 @@ export const useGameResult = () => {
                 });
                 return randomIndex;
             }
+
+            giftIdRef.current = result.giftId ?? null;
 
             // Преобразуем результат сервера в GiftItem
             const prize: GiftItem = {
@@ -105,8 +109,9 @@ export const useGameResult = () => {
 
             return targetIndex;
         } catch (error: any) {
+            giftIdRef.current = null;
             console.error('Ошибка при старте игры:', error);
-            
+
             // Обрабатываем ошибку недостаточного баланса
             if (error?.response?.status === 402 || error?.response?.status === 400) {
                 const errorMessage = error?.response?.data?.message || error?.message || 'Недостаточный баланс';
@@ -130,6 +135,7 @@ export const useGameResult = () => {
 
         const isNoLoot = result.selectedItem.type === 'no-loot' || result.selectedItem.name === 'No loot';
         if (isNoLoot) {
+            giftIdRef.current = null;
             setStartGameState({
                 prize: null,
                 targetIndex: null,
@@ -138,6 +144,8 @@ export const useGameResult = () => {
             });
             return;
         }
+
+        const giftId = giftIdRef.current;
 
         // Открываем модальное окно с результатом
         eventBus.emit(MODAL_EVENTS.OPEN_WIN_MODAL, {
@@ -148,8 +156,11 @@ export const useGameResult = () => {
             },
             rolls: result.rolls,
             totalPrice: result.totalPrice,
+            giftId: giftId ?? undefined,
         });
-        
+
+        giftIdRef.current = null;
+
         // Сбрасываем состояние после завершения игры
         setStartGameState({
             prize: null,

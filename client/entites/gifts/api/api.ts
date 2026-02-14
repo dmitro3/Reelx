@@ -27,6 +27,7 @@ interface StartGameResponse {
     name: string;
     price: number;
     image?: string;
+    giftId?: string;
     address?: string;
     collectionAddress?: string;
     amount?: number;

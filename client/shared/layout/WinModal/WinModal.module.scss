@@ -153,9 +153,12 @@
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 162px;
+    gap: 14px;
+    width: 100%;
+    max-width: 320px;
     margin: 44px auto 0;
+    padding: 0 24px;
+    box-sizing: border-box;
     animation: slideUp 0.6s ease-out 0.4s both;
 }
 
@@ -163,17 +166,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 10px;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 16px;
     background: 
         linear-gradient(90deg, rgba(116, 86, 233, 1) -10%,  10%, rgba(255, 255, 255, 1) 100%);
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
-    font-size: 10px;
+    font-size: 14px;
     color: #1E1D2B;
     line-height: 1.22;
 
@@ -185,6 +189,11 @@
     &:active {
         transform: translateY(0);
     }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
 }
 
 .claimButton,
@@ -193,15 +202,16 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 8px 10px;
+    width: 100%;
+    padding: 14px 16px;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
-    font-size: 10px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.32);
     line-height: 1.22;
 
@@ -219,19 +229,31 @@
 .priceTag {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
 
     img {
-        width: 11px;
-        height: 11px;
+        width: 14px;
+        height: 14px;
     }
 
     span {
         font-family: 'Montserrat', sans-serif;
         font-weight: 700;
-        font-size: 10px;
+        font-size: 14px;
         line-height: 1.22;
     }
+}
+
+.sellError {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: #ff4444;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 68, 68, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
 // Responsive
