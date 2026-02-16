@@ -107,27 +107,18 @@ export class UserRepository {
         isOut: boolean;
         createdAt: Date;
     }>> {
-        const gifts = await this.prisma.userGifts.findMany({
+        return (await this.prisma.userGifts.findMany({
             where: { userId },
             select: {
                 id: true,
                 giftName: true,
                 image: true,
-                lottie: true,
+                lottieUrl: true,
                 price: true,
                 isOut: true,
                 createdAt: true,
             },
             orderBy: { createdAt: 'desc' },
-        }));
-        return gifts.map(gift => ({
-            id: gift.id,
-            giftName: gift.giftName,
-            image: gift.image ?? null,
-            lottieUrl: gift.lottie ?? null,
-            price: gift.price ?? null,
-            isOut: gift.isOut,
-            createdAt: gift.createdAt,
         }));
     }
 
