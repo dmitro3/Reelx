@@ -83,6 +83,7 @@ export class UsersService {
             id: gift.id,
             giftName: gift.giftName,
             image: gift.image ?? undefined,
+            lottieUrl: gift.lottieUrl ?? undefined,
             price: gift.price ?? undefined,
             isOut: gift.isOut,
             createdAt: gift.createdAt,

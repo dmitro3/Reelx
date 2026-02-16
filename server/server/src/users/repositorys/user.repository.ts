@@ -102,21 +102,32 @@ export class UserRepository {
         id: string;
         giftName: string;
         image: string | null;
+        lottieUrl: string | null;
         price: number | null;
         isOut: boolean;
         createdAt: Date;
     }>> {
-        return (await this.prisma.userGifts.findMany({
+        const gifts = await this.prisma.userGifts.findMany({
             where: { userId },
             select: {
                 id: true,
                 giftName: true,
                 image: true,
+                lottie: true,
                 price: true,
                 isOut: true,
                 createdAt: true,
             },
             orderBy: { createdAt: 'desc' },
+        }));
+        return gifts.map(gift => ({
+            id: gift.id,
+            giftName: gift.giftName,
+            image: gift.image ?? null,
+            lottieUrl: gift.lottie ?? null,
+            price: gift.price ?? null,
+            isOut: gift.isOut,
+            createdAt: gift.createdAt,
         }));
     }
 
