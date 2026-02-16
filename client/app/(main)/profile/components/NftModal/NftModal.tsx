@@ -4,6 +4,7 @@ import { useEffect, useContext, useState } from 'react';
 import Image from 'next/image';
 import { useTonWallet, TonConnectUIContext } from '@tonconnect/ui-react';
 import { UserGift } from '@/entites/user/api/api';
+import { GiftImageOrLottie } from '@/shared/ui/GiftImageOrLottie/GiftImageOrLottie';
 import { nftWithdrawService } from '@/features/nft/nft';
 import { updateUserBalance } from '@/features/user/user';
 import cls from './NftModal.module.scss';
@@ -101,17 +102,17 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
             <div className={cls.background} />
 
             <div className={cls.nftCard}>
-                {nft.image ? (
-                    <Image 
-                        src={nft.image} 
-                        alt={nft.giftName}
-                        width={167}
-                        height={191}
-                        className={cls.nftImage}
-                    />
-                ) : (
-                    <div className={cls.nftPlaceholder}>🎁</div>
-                )}
+                <GiftImageOrLottie
+                    image={nft.image}
+                    lottieUrl={nft.lottieUrl}
+                    alt={nft.giftName}
+                    width={167}
+                    height={191}
+                    fillContainer
+                    className={cls.nftCardMedia}
+                    imageClassName={cls.nftImage}
+                    placeholder={<div className={cls.nftPlaceholder}>🎁</div>}
+                />
                 <div className={cls.nftName}>
                     {nft.giftName.includes('#') ? (
                         <>

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import tonIcon from '@/assets/ton.svg';
 import { UserGift } from '@/entites/user/api/api';
+import { GiftImageOrLottie } from '@/shared/ui/GiftImageOrLottie/GiftImageOrLottie';
 import cls from '../inventory.module.scss';
 
 interface GiftItemProps {
@@ -16,12 +17,13 @@ export const GiftItem: React.FC<GiftItemProps> = ({ gift, onClick }) => {
     return (
         <div className={cls.giftItem} onClick={handleClick} style={{ cursor: 'pointer' }}>
             <div className={cls.giftImage}>
-                <Image
-                    src={gift.image || '/NFT.png'}
+                <GiftImageOrLottie
+                    image={gift.image || '/NFT.png'}
+                    lottieUrl={gift.lottieUrl}
                     alt={gift.giftName}
-                    width={112}
-                    height={112}
-                    className={cls.nftImage}
+                    fillContainer
+                    className={cls.giftImageMedia}
+                    imageClassName={cls.nftImage}
                 />
             </div>
             <div className={cls.giftName}>

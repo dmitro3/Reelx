@@ -5,6 +5,8 @@ export interface UserGift {
     id: string;
     giftName: string;
     image?: string;
+    /** URL lottie-анимации (из TonCenter / nftbuyber) */
+    lottieUrl?: string;
     price?: number;
     isOut: boolean;
     createdAt: string;
