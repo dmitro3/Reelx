@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import dynamic from 'next/dynamic';
 import cls from './GiftImageOrLottie.module.scss';
@@ -35,6 +35,7 @@ export const GiftImageOrLottie = ({
     placeholder,
 }: GiftImageOrLottieProps) => {
     const [lottieData, setLottieData] = useState<object | null>(null);
+    const lottieContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (!lottieUrl) {
@@ -55,6 +56,38 @@ export const GiftImageOrLottie = ({
         };
     }, [lottieUrl]);
 
+    // Хак: для Lottie (фрагменты подарков) убираем фоновые g-слои,
+    // первые две g в svg сразу после defs (ID генерируются динамически, разные у каждого NFT)
+    useEffect(() => {
+        if (!lottieData || !lottieContainerRef.current) return;
+
+        const hideBgLayers = () => {
+            const container = lottieContainerRef.current;
+            if (!container) return;
+            const svg = container.querySelector('svg');
+            if (!svg) return false;
+
+            let pastDefs = false;
+            const gsToHide: Element[] = [];
+            for (const child of Array.from(svg.children)) {
+                if (child.tagName.toLowerCase() === 'defs') {
+                    pastDefs = true;
+                    continue;
+                }
+                if (pastDefs && child.tagName.toLowerCase() === 'g' && gsToHide.length < 2) {
+                    gsToHide.push(child);
+                }
+            }
+            gsToHide.forEach((g) => ((g as HTMLElement).style.display = 'none'));
+            return true;
+        };
+
+        if (!hideBgLayers()) {
+            const t = setTimeout(hideBgLayers, 50);
+            return () => clearTimeout(t);
+        }
+    }, [lottieData]);
+
     const sizeStyle = fillContainer
         ? { width: '100%', height: '100%' as const }
         : { width, height };
@@ -62,6 +95,7 @@ export const GiftImageOrLottie = ({
     if (lottieData) {
         return (
             <div
+                ref={lottieContainerRef}
                 className={`${cls.lottieWrap} ${fillContainer ? cls.fillContainer : ''} ${className ?? ''}`}
                 style={sizeStyle}
             >
