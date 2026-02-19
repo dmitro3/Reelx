@@ -25,12 +25,17 @@
     transition: all 0.2s ease;
     flex-shrink: 0;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.1);
     }
 
-    &:active {
+    &:active:not(:disabled) {
         transform: scale(0.95);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
 }
 
@@ -42,7 +47,7 @@
 .currencyButton {
     position: relative;
     
-    &:hover {
+    &:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.12);
         box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
     }
@@ -51,7 +56,7 @@
         transition: transform 0.2s ease;
     }
 
-    &:active svg {
+    &:active:not(:disabled) svg {
         transform: scale(0.9);
     }
 }

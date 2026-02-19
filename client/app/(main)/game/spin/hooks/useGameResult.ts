@@ -147,6 +147,19 @@ export const useGameResult = () => {
             return;
         }
 
+        // TON и STARS уже начислены в startGame — модальное окно не показываем
+        const isMoneyWin = result.selectedItem.name === 'TON' || result.selectedItem.name === 'STARS';
+        if (isMoneyWin) {
+            giftIdRef.current = null;
+            setStartGameState({
+                prize: null,
+                targetIndex: null,
+                isLoading: false,
+                error: null,
+            });
+            return;
+        }
+
         const giftId = giftIdRef.current;
 
         // Открываем модальное окно с результатом

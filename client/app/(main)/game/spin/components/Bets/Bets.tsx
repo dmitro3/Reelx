@@ -86,6 +86,7 @@ const Bets = ({
                     <button 
                         className={`${cls.iconButton} ${cls.currencyButton}`} 
                         onClick={onToggleCurrency}
+                        disabled={isSpinning}
                         title={`Переключить на ${currency === 'stars' ? 'TON' : 'STARS'}`}
                     >
                         {renderCurrencyIcon()}

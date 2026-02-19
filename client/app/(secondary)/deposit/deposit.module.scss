@@ -83,65 +83,51 @@
         border-radius: 100%;
     }
 
-    & .walletBlock {
+    & .walletCard {
         margin-top: 16px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
-    & .walletButton {
+    & .walletCardLabel {
+        font-size: 12px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    & .walletCardRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    & .walletCardAddress {
+        font-family: 'Montserrat', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.02em;
+    }
+
+    & .walletCardDisconnect {
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        width: 100%;
-        height: 48px;
-        background: linear-gradient(135deg, #3a2d6e 0%, #1a1540 100%);
+        background: rgba(255, 255, 255, 0.08);
         border: none;
-        border-radius: 12px;
-        color: #fff;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
+        border-radius: 10px;
         cursor: pointer;
-        transition: opacity 0.2s;
+        flex-shrink: 0;
+        transition: background 0.2s;
 
         &:active {
-            opacity: 0.8;
-        }
-    }
-
-    & .walletInfo {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 10px;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.72);
-
-        svg {
-            flex-shrink: 0;
-        }
-    }
-
-    & .walletDisconnect {
-        width: 100%;
-        height: 40px;
-        background: none;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 10px;
-        color: rgba(255, 255, 255, 0.5);
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 500;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:active {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.14);
         }
     }
 }
