@@ -75,6 +75,15 @@
     border-radius: 50%;
     overflow: hidden;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+    background: transparent;
+}
+
+.segmentLottie {
+    background: transparent !important;
+
+    svg {
+        background: transparent !important;
+    }
 }
 
 .segmentImage {

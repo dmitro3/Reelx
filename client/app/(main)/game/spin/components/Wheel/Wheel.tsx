@@ -160,6 +160,7 @@ const Wheel = ({ items, isSpinning: externalIsSpinning, onSpinComplete, targetIn
                                         alt={item.name}
                                         width={56}
                                         height={56}
+                                        className={cls.segmentLottie}
                                         imageClassName={cls.segmentImage}
                                     />
                                 </div>
