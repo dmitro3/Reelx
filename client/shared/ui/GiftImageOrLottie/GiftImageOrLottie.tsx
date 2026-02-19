@@ -56,8 +56,8 @@ export const GiftImageOrLottie = ({
         };
     }, [lottieUrl]);
 
-    // Хак: для Lottie (фрагменты подарков) убираем фоновые g-слои,
-    // первые две g в svg сразу после defs (ID генерируются динамически, разные у каждого NFT)
+    // Хак: для Lottie (фрагменты подарков) убираем фон:
+    // берём первый <g>, который идёт после <defs>, и скрываем первые два его дочерних <g>.
     useEffect(() => {
         if (!lottieData || !lottieContainerRef.current) return;
 
@@ -68,17 +68,29 @@ export const GiftImageOrLottie = ({
             if (!svg) return false;
 
             let pastDefs = false;
-            const gsToHide: Element[] = [];
+            let wrapperG: Element | null = null;
+
             for (const child of Array.from(svg.children)) {
                 if (child.tagName.toLowerCase() === 'defs') {
                     pastDefs = true;
                     continue;
                 }
-                if (pastDefs && child.tagName.toLowerCase() === 'g' && gsToHide.length < 2) {
-                    gsToHide.push(child);
+                if (pastDefs && child.tagName.toLowerCase() === 'g') {
+                    wrapperG = child;
+                    break;
                 }
             }
-            gsToHide.forEach((g) => ((g as HTMLElement).style.display = 'none'));
+
+            if (!wrapperG) return false;
+
+            const childGs = Array.from(wrapperG.children).filter(
+                (el) => el.tagName.toLowerCase() === 'g',
+            );
+
+            childGs.slice(0, 2).forEach((g) => {
+                (g as HTMLElement).style.display = 'none';
+            });
+
             return true;
         };
 
