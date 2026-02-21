@@ -15,6 +15,8 @@ interface GiftImageOrLottieProps {
     height?: number;
     /** Заполнять родительский контейнер (100% width/height). Для списка призов. */
     fillContainer?: boolean;
+    /** Скрывать фоновые слои в Lottie (первые два <g> после <defs>). Если не передан — фон не трогаем. */
+    hideLottieBackground?: boolean;
     className?: string;
     imageClassName?: string;
     placeholder?: React.ReactNode;
@@ -30,6 +32,7 @@ export const GiftImageOrLottie = ({
     width = 0,
     height = 0,
     fillContainer = false,
+    hideLottieBackground,
     className,
     imageClassName,
     placeholder,
@@ -56,10 +59,10 @@ export const GiftImageOrLottie = ({
         };
     }, [lottieUrl]);
 
-    // Хак: для Lottie (фрагменты подарков) убираем фон:
+    // Хак: для Lottie (фрагменты подарков) по флагу убираем фон:
     // берём первый <g>, который идёт после <defs>, и скрываем первые два его дочерних <g>.
     useEffect(() => {
-        if (!lottieData || !lottieContainerRef.current) return;
+        if (hideLottieBackground !== true || !lottieData || !lottieContainerRef.current) return;
 
         const hideBgLayers = () => {
             const container = lottieContainerRef.current;
@@ -98,7 +101,7 @@ export const GiftImageOrLottie = ({
             const t = setTimeout(hideBgLayers, 50);
             return () => clearTimeout(t);
         }
-    }, [lottieData]);
+    }, [lottieData, hideLottieBackground]);
 
     const sizeStyle = fillContainer
         ? { width: '100%', height: '100%' as const }
@@ -138,8 +141,7 @@ export const GiftImageOrLottie = ({
             <Image
                 src={image}
                 alt={alt}
-                width={width}
-                height={height}
+                style={{ width: `${width}vw`, height: `${height}vw` }}
                 className={imageClassName ?? cls.image}
             />
         );
