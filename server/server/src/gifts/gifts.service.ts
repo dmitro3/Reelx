@@ -218,7 +218,7 @@ export class GiftsService {
     }
 
     if (amount >= 10 && amount < 20) {
-      const desiredSlots = 10;
+      const desiredSlots = 9;
       const baseGifts = allRawGifts.slice(0, Math.max(1, Math.min(desiredSlots, allRawGifts.length)));
 
       // Дублируем подарки, если их меньше 10, чтобы набрать 10 слотов

@@ -79,7 +79,8 @@ export const useGameResult = () => {
 
             if (targetIndex === -1) {
                 console.warn('Prize not found in wheel items, using random index');
-                giftIdRef.current = null;
+                // Сохраняем giftId от сервера, чтобы кнопка «Продать» работала в модалке
+                giftIdRef.current = result.giftId ?? null;
                 const randomIndex = Math.floor(Math.random() * wheelItems.length);
                 setStartGameState({
                     prize: wheelItems[randomIndex],
