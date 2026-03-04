@@ -186,7 +186,7 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
                     className={cls.backButton}
                     onClick={onClose}
                 >
-                    Выйти
+                    Назад
                 </button>
 
                 {isWalletConnected ? (
