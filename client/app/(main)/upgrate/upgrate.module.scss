@@ -1,0 +1,372 @@
+.page {
+    position: relative;
+    min-height: 100vh;
+    background: linear-gradient(180deg, rgba(4, 22, 42, 1) 0%, rgba(0, 2, 2, 1) 100%);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 90px;
+}
+
+.bgEllipse {
+    position: absolute;
+    width: 393px;
+    height: 376px;
+    bottom: 100px;
+    left: 8px;
+    background: rgba(116, 86, 233, 0.3);
+    filter: blur(150px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Header ── */
+.header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.balances {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.balanceItem {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.219;
+    color: #ffffff;
+}
+
+.levelBadge {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 10px;
+    background: linear-gradient(90deg, rgba(116, 86, 233, 1) 0%, rgba(65, 48, 131, 1) 46%);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    height: 17px;
+}
+
+.levelNum {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.219;
+    color: #ffffff;
+}
+
+.levelText {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 7px;
+    line-height: 1.219;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Arena ── */
+.arenaWrapper {
+    position: relative;
+    z-index: 1;
+    width: 240px;
+    height: 259px;
+    margin: 0 auto;
+    flex-shrink: 0;
+}
+
+.glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 240px;
+    background: #7456e9;
+    filter: blur(70px);
+    border-radius: 177px;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.circle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+.arenaArrows {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    width: 240px;
+    height: 240px;
+    filter:blur(20px);
+    pointer-events: none;
+}
+
+.percentageBlock {
+    position: absolute;
+    left: 67px;
+    top: 92px;
+    width: 109px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    z-index: 2;
+}
+
+.percentage {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.219;
+    color: rgba(255, 255, 255, 0.1);
+}
+
+.chanceLabel {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    line-height: 1.219;
+    text-align: center;
+    color: #ffffff;
+    width: 100%;
+}
+
+.upgradeIconCenter {
+    position: absolute;
+    left: 99px;
+    top: 215px;
+    width: 44px;
+    height: 44px;
+    z-index: 2;
+}
+
+/* ── Before / After ── */
+.beforeAfterRow {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 20px 0;
+    height: 54px;
+}
+
+.baSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.baLabel {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    line-height: 1.219;
+    color: #ffffff;
+    align-self: flex-start;
+}
+
+.valueDisplay {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 12px 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 54px;
+    width: 64px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    line-height: 1.219;
+    color: #ffffff;
+}
+
+
+/* ── Bottom section ── */
+.bottomSection {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin: 24px 20px 0;
+}
+
+.multipliersRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 11px;
+}
+
+.multiplierBtn {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.219;
+    color: rgba(255, 255, 255, 0.24);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.multiplierBtnActive {
+    background: rgba(116, 86, 233, 0.3);
+    color: #ffffff;
+}
+
+.upgradeButton {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    width: 100%;
+    cursor: pointer;
+
+    span {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 1.219;
+        color: #ffffff;
+    }
+}
+
+/* ── Tab bar ── */
+.tabBar {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+}
+
+.tab {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    line-height: 1.219;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.32);
+    transition: all 0.2s ease;
+}
+
+.tabActive {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-radius: 6px;
+}
+
+/* ── Gift grid ── */
+.giftGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.giftItem {
+    background: #302c44;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0px 4px 10.7px 0px rgba(31, 30, 42, 0.24);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.15s ease;
+    outline: 2px solid transparent;
+    outline-offset: 0;
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+.giftItemSelected {
+    outline-color: #7456e9;
+}
+
+.giftImageBox {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.giftName {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 1.219;
+    color: #ffffff;
+    text-align: center;
+    margin-top: 10px;
+    padding: 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.giftPrice {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    line-height: 1.219;
+    color: #ffffff;
+}
