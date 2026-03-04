@@ -8,6 +8,7 @@ import starIcon from '@/assets/star.svg';
 import upgradeArrows from '@/assets/upgrade-arrows.svg';
 import upgradeIcon from '@/assets/upgrade-icon.svg';
 import { useUserStore } from '@/entites/user/model/user';
+import { Header } from '@/shared/layout/Header/Header';
 
 const MULTIPLIERS = ['x1.5', 'x2', 'x3', 'x5', 'x10', 'x20'];
 
@@ -31,25 +32,8 @@ export default function UpgratePage() {
 
     return (
         <div className={cls.page}>
+            <Header />
             <div className={cls.bgEllipse} />
-
-            {/* Header */}
-            <header className={cls.header}>
-                <div className={cls.balances}>
-                    <div className={cls.balanceItem}>
-                        <Image src={tonIcon} alt="TON" width={20} height={20} />
-                        <span>{tonBalance.toFixed(2)}</span>
-                    </div>
-                    <div className={cls.balanceItem}>
-                        <Image src={starIcon} alt="Stars" width={17} height={16} />
-                        <span>{starsBalance}</span>
-                    </div>
-                </div>
-                <div className={cls.levelBadge}>
-                    <span className={cls.levelNum}>5</span>
-                    <span className={cls.levelText}>LVL</span>
-                </div>
-            </header>
 
             {/* Upgrade Arena */}
             <div className={cls.arenaWrapper}>
