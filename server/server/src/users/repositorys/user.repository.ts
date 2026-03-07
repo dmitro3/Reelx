@@ -122,6 +122,31 @@ export class UserRepository {
         }));
     }
 
+    async getUserGiftsByIds(
+        userId: string,
+        giftIds: string[],
+    ): Promise<Array<{
+        id: string;
+        giftName: string;
+        image: string | null;
+        price: number | null;
+    }>> {
+        if (giftIds.length === 0) return [];
+        return this.prisma.userGifts.findMany({
+            where: {
+                userId,
+                id: { in: giftIds },
+                isOut: false,
+            },
+            select: {
+                id: true,
+                giftName: true,
+                image: true,
+                price: true,
+            },
+        });
+    }
+
     async createUserGame(data: {
         userId: string;
         type: UserGamesType;

@@ -1,34 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import cls from './upgrate.module.scss';
 import tonIcon from '@/assets/ton.svg';
-import starIcon from '@/assets/star.svg';
 import upgradeArrows from '@/assets/upgrade-arrows.svg';
 import upgradeIcon from '@/assets/upgrade-icon.svg';
 import { useUserStore } from '@/entites/user/model/user';
+import { userService, UserGift } from '@/entites/user/api/api';
+import { GiftImageOrLottie } from '@/shared/ui/GiftImageOrLottie/GiftImageOrLottie';
 import { Header } from '@/shared/layout/Header/Header';
 
-const MULTIPLIERS = ['x1.5', 'x2', 'x3', 'x5', 'x10', 'x20'];
+const MULTIPLIERS = ['x1.5', 'x2', 'x3', 'x5', 'x10', 'x20'] as const;
 
-const MOCK_GIFTS = [
-    { id: 1, name: 'Gift Name', price: 5.20, bgColor: '#005F70' },
-    { id: 2, name: 'Gift Name', price: 8.25, bgColor: '#927DD5' },
-    { id: 3, name: 'Gift Name', price: 10.15, bgColor: '#4F7BDA' },
-    { id: 4, name: 'Gift Name', price: 4.35, bgColor: '#5B4FC6' },
-    { id: 5, name: 'Gift Name', price: 1.50, bgColor: '#20A275' },
-];
+const FALLBACK_COLORS = ['#005F70', '#927DD5', '#4F7BDA', '#5B4FC6', '#20A275'];
 
 export default function UpgratePage() {
     const [activeTab, setActiveTab] = useState<'inventory' | 'wishlist'>('inventory');
     const [selectedMultiplier, setSelectedMultiplier] = useState<string | null>(null);
-    const [selectedGifts, setSelectedGifts] = useState<number[]>([]);
+    const [selectedGifts, setSelectedGifts] = useState<string[]>([]);
+    const [inventoryGifts, setInventoryGifts] = useState<UserGift[]>([]);
+    const [isLoadingGifts, setIsLoadingGifts] = useState(true);
+    const [chance, setChance] = useState<number | null>(null);
     const { user } = useUserStore();
 
-    const chance = 0;
-    const tonBalance = user?.tonBalance ?? 250;
-    const starsBalance = user?.starsBalance ?? 60;
+    const loadGifts = useCallback(async () => {
+        if (!user) {
+            setInventoryGifts([]);
+            setIsLoadingGifts(false);
+            return;
+        }
+        try {
+            setIsLoadingGifts(true);
+            const gifts = await userService.getUserGifts();
+            setInventoryGifts(gifts.filter((g) => !g.isOut));
+        } catch (e) {
+            console.error('Ошибка загрузки подарков:', e);
+            setInventoryGifts([]);
+        } finally {
+            setIsLoadingGifts(false);
+        }
+    }, [user?.userId]);
+
+    useEffect(() => {
+        loadGifts();
+    }, [loadGifts]);
 
     return (
         <div className={cls.page}>
@@ -48,7 +64,7 @@ export default function UpgratePage() {
                     priority
                 />
                 <div className={cls.percentageBlock}>
-                    <span className={cls.percentage}>{chance}%</span>
+                    <span className={cls.percentage}>{chance != null ? Math.round(chance * 100) : 0}%</span>
                     <span className={cls.chanceLabel}>Шанс на улучшение</span>
                 </div>
                 <Image
@@ -114,28 +130,48 @@ export default function UpgratePage() {
                     </button>
                 </div>
 
-                {/* Gift grid */}
+                {/* Gift grid — подарки из инвентаря (как в профиле) */}
                 <div className={cls.giftGrid}>
-                    {MOCK_GIFTS.map(gift => (
-                        <div
-                            key={gift.id}
-                            className={`${cls.giftItem} ${selectedGifts.includes(gift.id) ? cls.giftItemSelected : ''}`}
-                            onClick={() =>
-                                setSelectedGifts(prev =>
-                                    prev.includes(gift.id)
-                                        ? prev.filter(id => id !== gift.id)
-                                        : [...prev, gift.id]
-                                )
-                            }
-                        >
-                            <div className={cls.giftImageBox} style={{ background: gift.bgColor }} />
-                            <span className={cls.giftName}>{gift.name}</span>
-                            <div className={cls.giftPrice}>
-                                <Image src={tonIcon} alt="TON" width={10} height={10} />
-                                <span>{gift.price.toFixed(2)}</span>
+                    {isLoadingGifts ? (
+                        <div className={cls.emptyState}>Загрузка...</div>
+                    ) : inventoryGifts.length === 0 ? (
+                        <div className={cls.emptyState}>Нет подарков в инвентаре</div>
+                    ) : (
+                        inventoryGifts.map((gift, index) => (
+                            <div
+                                key={gift.id}
+                                className={`${cls.giftItem} ${selectedGifts.includes(gift.id) ? cls.giftItemSelected : ''}`}
+                                onClick={() =>
+                                    setSelectedGifts((prev) =>
+                                        prev.includes(gift.id)
+                                            ? prev.filter((id) => id !== gift.id)
+                                            : [...prev, gift.id]
+                                    )
+                                }
+                            >
+                                <div
+                                    className={cls.giftImageBox}
+                                    style={{ background: FALLBACK_COLORS[index % FALLBACK_COLORS.length] }}
+                                >
+                                    <GiftImageOrLottie
+                                        image={gift.image || '/NFT.png'}
+                                        lottieUrl={gift.lottieUrl}
+                                        alt={gift.giftName}
+                                        fillContainer
+                                        className={cls.giftImageMedia}
+                                        imageClassName={cls.giftImageImg}
+                                    />
+                                </div>
+                                <span className={cls.giftName}>
+                                    {gift.giftName.includes('#') ? gift.giftName.split('#')[0] : gift.giftName}
+                                </span>
+                                <div className={cls.giftPrice}>
+                                    <Image src={tonIcon} alt="TON" width={10} height={10} />
+                                    <span>{(gift.price ?? 0).toFixed(2)}</span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </div>

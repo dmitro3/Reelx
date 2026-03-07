@@ -340,6 +340,30 @@
     aspect-ratio: 1;
     border-radius: 10px;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.giftImageMedia {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.giftImageImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    padding: 24px;
 }
 
 .giftName {

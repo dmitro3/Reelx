@@ -7,6 +7,7 @@ import { PrismaModule } from '../libs/infrustructure/prisma/prisma.module';
 import { RedisModule } from '../libs/infrustructure/redis/redis.module';
 import { TelegramBotModule } from './telegram-bot/telegram-bot.module';
 import { CurrancyModule } from '../libs/common/modules/Currancy/Currancy.module';
+import { UpgrateModule } from './upgrate/Upgrate.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CurrancyModule } from '../libs/common/modules/Currancy/Currancy.module'
     CurrancyModule,
     UsersModule,
     GiftsModule,
+    UpgrateModule,
     PromocodeModule,
     ...(process.env.DISABLE_TELEGRAM_BOT !== 'true' ? [TelegramBotModule] : []),
   ],
