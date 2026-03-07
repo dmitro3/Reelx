@@ -45,7 +45,7 @@ export function UpgradeArena({ chance, isLoadingChance }: UpgradeArenaProps) {
                     strokeWidth={STROKE_WIDTH}
                     strokeDasharray={CIRCUMFERENCE}
                     strokeDashoffset={strokeDashoffset}
-                    transform="rotate(-90 120 120)"
+                    transform="rotate(90 120 120)"
                 />
             </svg>
             <Image

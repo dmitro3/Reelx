@@ -119,7 +119,7 @@
 .circleFill {
     stroke: #7456e9;
     stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease-out;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .arenaArrows {
