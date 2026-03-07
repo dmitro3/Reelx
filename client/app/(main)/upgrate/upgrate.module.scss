@@ -209,6 +209,93 @@
     color: #ffffff;
 }
 
+/* ── Пул «Можно выиграть» ── */
+.poolSection {
+    position: relative;
+    z-index: 1;
+    margin: 16px 20px 0;
+}
+
+.poolSectionTitle {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.219;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.poolRow {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+}
+
+.poolCard {
+    flex-shrink: 0;
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+}
+
+.poolCardImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.poolCardImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.poolCardPlaceholder {
+    font-size: 20px;
+}
+
+.poolCardName {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 9px;
+    line-height: 1.2;
+    color: #ffffff;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.poolCardPrice {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 8px;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.6);
+}
 
 /* ── Bottom section ── */
 .bottomSection {
