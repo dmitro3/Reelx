@@ -19,9 +19,12 @@ export interface GetChanceResponse {
     poolGifts: PoolGift[];
 }
 
+/** Эндпоинт: UpgrateController POST get-chance */
+const GET_CHANCE_URL = '/upgrate/get-chance';
+
 class UpgrateService {
     async getChance(toyIds: string[], multiplier: number): Promise<GetChanceResponse> {
-        const response = await api.$authHost.post<GetChanceResponse>('/upgrate/get-chance', {
+        const response = await api.$authHost.post<GetChanceResponse>(GET_CHANCE_URL, {
             toyIds,
             multiplier,
         });
