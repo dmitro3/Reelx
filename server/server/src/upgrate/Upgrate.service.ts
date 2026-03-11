@@ -269,11 +269,35 @@ export class UpgrateService {
       ? this.selectWinningGifts(state)
       : this.selectLosingGifts(state);
 
-    const gifts: ToyRto[] = selected.map((g, idx) => ({
+    let gifts: ToyRto[] = selected.map((g, idx) => ({
       id: g.id ?? String(idx),
       name: g.name,
       image: g.image,
     }));
+
+    if (didWin && gifts.length > 0) {
+      // Создаём подарки в инвентаре пользователя
+      const created = await Promise.all(
+        gifts.map((g) =>
+          this.userRepository.createUserGift({
+            userId,
+            giftName: g.name ?? 'Gift',
+            giftAddress: '', // нет адреса из NFT-buyer, оставляем пустым
+            image: g.image,
+            price: undefined,
+            lottieUrl: undefined,
+          }),
+        ),
+      );
+
+      // Возвращаем фактические id созданных userGifts
+      gifts = created.map((u) => ({
+        id: u.id,
+        name: u.giftName,
+        image: u.image ?? undefined,
+      }));
+    }
+
     return { result: didWin ? 'win' : 'lose', gifts };
   }
 
