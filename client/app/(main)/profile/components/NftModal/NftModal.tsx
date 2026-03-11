@@ -17,8 +17,6 @@ interface NftModalProps {
     onWithdraw?: (nft: UserGift) => void;
 }
 
-const WITHDRAW_FEE = '0.03';
-
 const TonIcon = () => (
     <svg width="13" height="13" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="10" cy="10" r="10" fill="#0098EA"/>
@@ -169,13 +167,7 @@ export const NftModal = ({ isOpen, onClose, nft, onSell, onWithdraw }: NftModalP
                     onClick={isWalletConnected ? handleWithdraw : handleConnectWallet}
                     disabled={isWithdrawing}
                 >
-                    <span>{isWithdrawing ? 'Вывод...' : 'Вывести за'}</span>
-                    {!isWithdrawing && (
-                        <div className={cls.withdrawPriceTag}>
-                            <TonIcon />
-                            <span>{WITHDRAW_FEE}</span>
-                        </div>
-                    )}
+                    <span>{isWithdrawing ? 'Вывод...' : 'Забрать'}</span>
                 </button>
                 {withdrawError && (
                     <div className={cls.errorMessage}>{withdrawError}</div>

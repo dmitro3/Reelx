@@ -23,7 +23,7 @@ export class UpgrateController {
 
   @Get('start-game')
   @UseGuards(JwtAuthGuard)
-  async startGame() {
-    return this.upgrateService.startGame();
+  async startGame(@CurrentUser() userId: string) {
+    return this.upgrateService.startGame(userId);
   }
 }

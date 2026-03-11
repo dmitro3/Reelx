@@ -27,6 +27,9 @@ export default function UpgratePage() {
         winning,
         poolGifts,
         isLoadingChance,
+        startGame,
+        gameResult,
+        isPlaying,
     } = useUpgratePage();
 
     return (
@@ -51,7 +54,23 @@ export default function UpgratePage() {
                 <UpgradeButton
                     selectedCount={selectedGifts.length}
                     selectedMultiplier={selectedMultiplier}
+                    isReadyToPlay={selectedGifts.length > 0 && !isLoadingChance && chance != null}
+                    isPlaying={isPlaying}
+                    onPlay={startGame}
                 />
+
+                {gameResult && (
+                    <div className={cls.emptyState}>
+                        <div>
+                            {gameResult.result === 'win' ? 'Вы выиграли' : 'Вы проиграли'}
+                        </div>
+                        <div>
+                            {gameResult.gifts.map((g) => (
+                                <div key={g.id}>{g.name ?? g.id}</div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 

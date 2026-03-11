@@ -5,6 +5,7 @@ interface GiftItemFormatted {
   price: number;
   image: string;
   name: string;
+  lottie?: string;
 }
 
 interface RawGiftItem {
@@ -68,6 +69,7 @@ export const formatWheelItem = (
         collection: originalData.collection,
         price: formattedItem.price,
         image: originalData.image || formattedItem.image,
+        lottie: originalData.lottie ?? (formattedItem as any).lottie,
         ownerAddress: originalData.ownerAddress,
         actualOwnerAddress: originalData.actualOwnerAddress,
       } as WheelSecretItem;
@@ -101,6 +103,7 @@ export const formatWheelItem = (
         ? Number(originalData.price) / 1_000_000_000 
         : (item as GiftItemFormatted).price,
       image: originalData.image || (item as GiftItemFormatted).image,
+      lottie: originalData.lottie ?? (item as GiftItemFormatted).lottie,
       ownerAddress: originalData.ownerAddress,
       actualOwnerAddress: originalData.actualOwnerAddress,
     } as WheelGiftItem;
@@ -118,6 +121,7 @@ export const formatWheelItem = (
     },
     price: formattedItem.price,
     image: formattedItem.image,
+    lottie: formattedItem.lottie,
     ownerAddress: '',
     actualOwnerAddress: '',
   } as WheelGiftItem;

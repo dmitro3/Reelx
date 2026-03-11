@@ -21,6 +21,19 @@ export interface GetChanceResponse {
 
 /** Эндпоинт: UpgrateController POST get-chance */
 const GET_CHANCE_URL = '/upgrate/get-chance';
+/** Эндпоинт: UpgrateController GET start-game */
+const START_GAME_URL = '/upgrate/start-game';
+
+export interface StartGameGift {
+    id: string;
+    name?: string;
+    image?: string;
+}
+
+export interface StartGameResponse {
+    result: 'win' | 'lose';
+    gifts: StartGameGift[];
+}
 
 class UpgrateService {
     async getChance(toyIds: string[], multiplier: number): Promise<GetChanceResponse> {
@@ -28,6 +41,11 @@ class UpgrateService {
             toyIds,
             multiplier,
         });
+        return response.data;
+    }
+
+    async startGame(): Promise<StartGameResponse> {
+        const response = await api.$authHost.get<StartGameResponse>(START_GAME_URL);
         return response.data;
     }
 }

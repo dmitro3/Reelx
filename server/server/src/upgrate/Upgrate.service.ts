@@ -3,12 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { RedisService } from '../../libs/infrustructure/redis/redis.service';
 import { UserRepository } from '../users/repositorys/user.repository';
-import { ToyChanceRto } from './rto/toy-chance.rto';
 import { ToyRto } from './rto/toy.rto';
-import {
-  GetChanceResponseRto,
-  PoolGiftRto,
-} from './rto/get-chance-response.rto';
+import { GetChanceResponseRto } from './rto/get-chance-response.rto';
+import { StartGameResponseRto } from './rto/start-game-response.rto';
+import { buildUserToysRto } from './helpers/build-user-toys-rto.helper';
+import { buildPoolGiftsRto } from './helpers/build-pool-gifts-rto.helper';
+import { computeAverageWinning } from './helpers/compute-average-winning.helper';
+import { computeChanceFromMultiplier } from './helpers/compute-chance-from-multiplier.helper';
+import { getMinPriceTon } from './helpers/get-min-price-ton.helper';
+import { priceToTon } from './helpers/price-to-ton.helper';
+import { toNftBuyerGift, type NftBuyerGift } from './types/nft-buyer-gift.type';
+import type { UpgrateState } from './types/upgrate-state.type';
 
 const UPGRATE_TTL_SECONDS = 10 * 60; // 10 минут
 const MIN_PRICE_REDIS_KEY = 'gifts:min_price_ton';
@@ -16,13 +21,7 @@ const MIN_PRICE_TTL_SECONDS = 5 * 60;
 const MIN_PRICE_PROBE_STEP = 0.5;
 const MAX_ITERATIONS = 10;
 const POOL_SIZE = 10;
-
-/** Конвертация цены из ответа NFT (nanoTON или number) в TON */
-function priceToTon(price: string | number | undefined): number {
-  if (price == null) return 0;
-  if (typeof price === 'string') return Number(price) / 1_000_000_000;
-  return Number(price);
-}
+const UPGRATE_STATE_REDIS_KEY_PREFIX = 'upgrate:state';
 
 @Injectable()
 export class UpgrateService {
@@ -55,19 +54,35 @@ export class UpgrateService {
       toyIds,
     );
 
-    const minPriceTon = await this.getMinPriceTon();
+    const minPriceTon = await getMinPriceTon({
+      redisService: this.redisService,
+      axiosInstance: this.axiosInstance,
+      logger: this.logger,
+      nftBuyerUrl: this.nftBuyerUrl,
+      redisKey: MIN_PRICE_REDIS_KEY,
+      ttlSeconds: MIN_PRICE_TTL_SECONDS,
+      probeStep: MIN_PRICE_PROBE_STEP,
+      maxAmountTon: 100,
+      fallbackTon: 1,
+    });
     const { winGifts, loseGifts, baseAmount } = await this.fetchWinLosePools(
       sumPrices,
       multiplier,
       minPriceTon,
     );
 
-    await this.savePoolsToRedis(userId, winGifts, loseGifts);
+    const chance = computeChanceFromMultiplier(multiplier);
+    await this.saveUpgrateStateToRedis(
+      userId,
+      winGifts,
+      chance,
+      baseAmount,
+      loseGifts,
+    );
 
-    const chance = this.computeChanceFromMultiplier(multiplier);
-    const winning = this.computeAverageWinning(winGifts);
-    const userToys = this.buildUserToysRto(userGifts, chance, baseAmount, winning);
-    const poolGifts = this.buildPoolGiftsRto(winGifts, loseGifts);
+    const winning = computeAverageWinning(winGifts);
+    const userToys = buildUserToysRto(userGifts, chance, baseAmount, winning);
+    const poolGifts = buildPoolGiftsRto(winGifts, loseGifts);
 
     return { userToys, poolGifts };
   }
@@ -103,13 +118,40 @@ export class UpgrateService {
     multiplier: number,
     minPriceTon: number,
   ): Promise<{
-    winGifts: any[];
-    loseGifts: any[];
+    winGifts: NftBuyerGift[];
+    loseGifts: NftBuyerGift[];
     baseAmount: number;
   }> {
     let baseAmount = sumPrices * multiplier;
-    let winGifts: any[] = [];
-    let loseGifts: any[] = [];
+    let winGifts: NftBuyerGift[] = [];
+    let loseGifts: NftBuyerGift[] = [];
+
+    const ensurePoolSize = (
+      pool: NftBuyerGift[],
+      fallback: NftBuyerGift[],
+    ): NftBuyerGift[] => {
+      if (pool.length >= POOL_SIZE) return pool.slice(0, POOL_SIZE);
+      const result = [...pool];
+
+      const seen = new Set<string>();
+      for (const g of result) {
+        const key = String(
+          g?.id ?? `${g?.name ?? ''}|${g?.image ?? ''}|${g?.price ?? ''}`,
+        );
+        seen.add(key);
+      }
+
+      for (const g of fallback) {
+        if (result.length >= POOL_SIZE) break;
+        const key = String(
+          g?.id ?? `${g?.name ?? ''}|${g?.image ?? ''}|${g?.price ?? ''}`,
+        );
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(g);
+      }
+      return result.slice(0, POOL_SIZE);
+    };
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       if (baseAmount < minPriceTon) {
@@ -137,131 +179,162 @@ export class UpgrateService {
       baseAmount = baseAmount / 2;
     }
 
+    // Финальный фолбек: пробуем добить пулы самым "широким" запросом (minPriceTon)
+    if (winGifts.length < POOL_SIZE || loseGifts.length < POOL_SIZE) {
+      try {
+        const fallback = await this.fetchGiftsByPrice(minPriceTon);
+        winGifts = ensurePoolSize(winGifts, fallback);
+        loseGifts = ensurePoolSize(loseGifts, fallback);
+      } catch (err) {
+        this.logger.warn(
+          `Upgrate fallback fetch at minPriceTon=${minPriceTon} failed: ${(err as Error).message}`,
+        );
+      }
+    }
+
+    if (winGifts.length < POOL_SIZE || loseGifts.length < POOL_SIZE) {
+      this.logger.warn(
+        `Upgrate pools incomplete after fallback: win=${winGifts.length}, lose=${loseGifts.length}`,
+      );
+    }
+
     return { winGifts, loseGifts, baseAmount };
   }
 
-  private async savePoolsToRedis(
+  private async saveUpgrateStateToRedis(
     userId: string,
-    winGifts: any[],
-    loseGifts: any[],
+    winGifts: NftBuyerGift[],
+    chance: number,
+    bet: number,
+    loseGifts: NftBuyerGift[],
   ): Promise<void> {
-    const winKey = `upgrate:win:${userId}`;
-    const loseKey = `upgrate:lose:${userId}`;
+    const key = `${UPGRATE_STATE_REDIS_KEY_PREFIX}:${userId}`;
+    const state: UpgrateState = { winGifts, chance, bet, loseGifts };
     await this.redisService.set(
-      winKey,
-      JSON.stringify(winGifts),
-      UPGRATE_TTL_SECONDS,
-    );
-    await this.redisService.set(
-      loseKey,
-      JSON.stringify(loseGifts),
+      key,
+      JSON.stringify(state),
       UPGRATE_TTL_SECONDS,
     );
     this.logger.debug(
-      `Saved upgrate pools for user ${userId}: win=${winGifts.length}, lose=${loseGifts.length}`,
+      `Saved upgrate state for user ${userId}: win=${winGifts.length}, lose=${loseGifts.length}, chance=${chance}, bet=${bet}`,
     );
   }
 
-  private computeChanceFromMultiplier(multiplier: number): number {
-    const chanceRaw = 0.5 / multiplier;
-    return Math.min(0.99, Math.max(0.01, chanceRaw));
-  }
+  async startGame(userId: string): Promise<StartGameResponseRto> {
+    const key = `${UPGRATE_STATE_REDIS_KEY_PREFIX}:${userId}`;
+    const raw = await this.redisService.get(key);
+    if (!raw) {
+      throw new BadRequestException('Upgrate state not found. Call get-chance first.');
+    }
 
-  private computeAverageWinning(winGifts: any[]): number {
-    if (winGifts.length === 0) return 0;
-    return (
-      winGifts.reduce((s, g) => s + priceToTon(g?.price), 0) / winGifts.length
-    );
-  }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new BadRequestException('Upgrate state is corrupted.');
+    }
 
-  private buildUserToysRto(
-    userGifts: Awaited<ReturnType<UserRepository['getUserGiftsByIds']>>,
-    chance: number,
-    bet: number,
-    winning: number,
-  ): ToyChanceRto[] {
-    return userGifts.map((g) => ({
-      id: g.id,
-      chance,
-      bet,
-      winning,
+    if (parsed == null || typeof parsed !== 'object') {
+      throw new BadRequestException('Upgrate state is corrupted.');
+    }
+
+    const obj = parsed as Record<string, unknown>;
+    const chance = typeof obj.chance === 'number' ? obj.chance : NaN;
+    const bet = typeof obj.bet === 'number' ? obj.bet : NaN;
+    const winRaw = obj.winGifts;
+    const loseRaw = obj.loseGifts;
+
+    if (!Number.isFinite(chance) || !Number.isFinite(bet)) {
+      throw new BadRequestException('Upgrate state is corrupted.');
+    }
+    if (!Array.isArray(winRaw) || !Array.isArray(loseRaw)) {
+      throw new BadRequestException('Upgrate state is corrupted.');
+    }
+
+    const winGifts: NftBuyerGift[] = [];
+    for (const item of winRaw) {
+      const g = toNftBuyerGift(item);
+      if (g) winGifts.push(g);
+    }
+    const loseGifts: NftBuyerGift[] = [];
+    for (const item of loseRaw) {
+      const g = toNftBuyerGift(item);
+      if (g) loseGifts.push(g);
+    }
+
+    const state: UpgrateState = { winGifts, chance, bet, loseGifts };
+
+    const didWin = Math.random() < state.chance;
+    const selected = didWin
+      ? this.selectWinningGifts(state)
+      : this.selectLosingGifts(state);
+
+    const gifts: ToyRto[] = selected.map((g, idx) => ({
+      id: g.id ?? String(idx),
+      name: g.name,
+      image: g.image,
     }));
+    return { result: didWin ? 'win' : 'lose', gifts };
   }
 
-  private buildPoolGiftsRto(
-    winGifts: any[],
-    loseGifts: any[],
-  ): PoolGiftRto[] {
-    return [
-      ...winGifts.map((g: any) => ({
-        name: g?.name ?? 'Gift',
-        image: g?.image,
-        price: priceToTon(g?.price),
-        pool: 'win' as const,
-      })),
-      ...loseGifts.map((g: any) => ({
-        name: g?.name ?? 'Gift',
-        image: g?.image,
-        price: priceToTon(g?.price),
-        pool: 'lose' as const,
-      })),
-    ];
+  private selectWinningGifts(state: UpgrateState): NftBuyerGift[] {
+    // Минимум подарков, чтобы суммарная цена была > bet
+    const sorted = [...state.winGifts].sort(
+      (a, b) => priceToTon(a.price) - priceToTon(b.price),
+    );
+    const picked: NftBuyerGift[] = [];
+    let sum = 0;
+    for (const g of sorted) {
+      if (picked.length === 0 || sum <= state.bet) {
+        picked.push(g);
+        sum += priceToTon(g.price);
+      }
+      if (sum > state.bet) break;
+    }
+    return picked.length > 0 ? picked : sorted.slice(0, 1);
   }
 
-  async startGame(): Promise<ToyRto[]> {
-    return [
-      { id: '1', name: 'Toy 1', image: '/images/toy1.png' },
-      { id: '2', name: 'Toy 2', image: '/images/toy2.png' },
-    ];
+  private selectLosingGifts(state: UpgrateState): NftBuyerGift[] {
+    if (state.loseGifts.length === 0) return [];
+
+    const chooseSingle = Math.random() < 0.5;
+    if (chooseSingle) {
+      const idx = Math.floor(Math.random() * state.loseGifts.length);
+      return [state.loseGifts[idx]];
+    }
+
+    // Набор подарков с суммой < 50% ставки (если не получается — отдаём 1 подарок)
+    const limit = state.bet * 0.5;
+    const sorted = [...state.loseGifts].sort(
+      (a, b) => priceToTon(a.price) - priceToTon(b.price),
+    );
+
+    const picked: NftBuyerGift[] = [];
+    let sum = 0;
+    for (const g of sorted) {
+      const p = priceToTon(g.price);
+      if (picked.length === 0 && p <= 0) continue;
+      if (sum + p >= limit) break;
+      picked.push(g);
+      sum += p;
+    }
+
+    if (picked.length > 0) return picked;
+    return [sorted[0]];
   }
 
-  private async fetchGiftsByPrice(amountTon: number): Promise<any[]> {
+  private async fetchGiftsByPrice(amountTon: number): Promise<NftBuyerGift[]> {
     const url = `${this.nftBuyerUrl}/api/nft/gifts/by-price`;
     const response = await this.axiosInstance.post(url, {
       amount: amountTon,
     });
-    const gifts = response.data?.gifts ?? [];
-    return Array.isArray(gifts) ? gifts : [];
-  }
-
-  private async getMinPriceTon(): Promise<number> {
-    const cached = await this.redisService.get(MIN_PRICE_REDIS_KEY);
-    if (cached != null) {
-      const value = parseFloat(cached);
-      if (!Number.isNaN(value)) return value;
+    const giftsRaw: unknown = response.data?.gifts;
+    if (!Array.isArray(giftsRaw)) return [];
+    const gifts: NftBuyerGift[] = [];
+    for (const item of giftsRaw) {
+      const gift = toNftBuyerGift(item);
+      if (gift) gifts.push(gift);
     }
-
-    const url = `${this.nftBuyerUrl}/api/nft/gifts/by-price`;
-    let amountTon = MIN_PRICE_PROBE_STEP;
-
-    while (amountTon <= 100) {
-      try {
-        const response = await this.axiosInstance.post(url, {
-          amount: amountTon,
-        });
-        const gifts: any[] = response.data?.gifts ?? [];
-        if (Array.isArray(gifts) && gifts.length > 0) {
-          await this.redisService.set(
-            MIN_PRICE_REDIS_KEY,
-            String(amountTon),
-            MIN_PRICE_TTL_SECONDS,
-          );
-          return amountTon;
-        }
-      } catch (err) {
-        this.logger.warn(
-          `Upgrate min price probe at ${amountTon} failed: ${(err as Error).message}`,
-        );
-      }
-      amountTon += MIN_PRICE_PROBE_STEP;
-    }
-
-    const fallback = 1;
-    await this.redisService.set(
-      MIN_PRICE_REDIS_KEY,
-      String(fallback),
-      MIN_PRICE_TTL_SECONDS,
-    );
-    return fallback;
+    return gifts;
   }
 }

@@ -148,7 +148,6 @@ const WinModal = () => {
     const isNoLoot = selectedItem.name === 'NO LOOT';
 
     const sellPrice = selectedItem.price ? (selectedItem.price * 0.8).toFixed(2) : '4.15';
-    const claimPrice = selectedItem.price ? (selectedItem.price * 0.1).toFixed(2) : '0.03';
 
     return (
         <div className={`${cls.winModal} ${isOpen ? cls.open : ''}`}>
@@ -223,11 +222,7 @@ const WinModal = () => {
                     {sellError && <div className={cls.sellError}>{sellError}</div>}
 
                     <button className={cls.claimButton} onClick={handleClaim}>
-                        <span>Забрать за</span>
-                        <div className={cls.claimPriceTag}>
-                            <TonIcon />
-                            <span>{claimPrice}</span>
-                        </div>
+                        <span>Забрать</span>
                     </button>
 
                     {isWalletConnected ? (

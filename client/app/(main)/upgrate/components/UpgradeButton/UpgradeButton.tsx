@@ -5,17 +5,37 @@ import cls from '../../upgrate.module.scss';
 interface UpgradeButtonProps {
     selectedCount: number;
     selectedMultiplier: string | null;
+    isReadyToPlay: boolean;
+    isPlaying: boolean;
+    onPlay: () => void;
 }
 
-export function UpgradeButton({ selectedCount, selectedMultiplier }: UpgradeButtonProps) {
+export function UpgradeButton({
+    selectedCount,
+    selectedMultiplier,
+    isReadyToPlay,
+    isPlaying,
+    onPlay,
+}: UpgradeButtonProps) {
     const text =
         selectedCount === 0
             ? 'Выберите подарки для апгрейда'
             : `Выбрано подарков: ${selectedCount}${selectedMultiplier ? `, ставка ${selectedMultiplier}` : ' (ставка x1)'}`;
 
     return (
-        <div className={cls.upgradeButton}>
-            <span>{text}</span>
-        </div>
+        <button
+            type="button"
+            className={cls.upgradeButton}
+            onClick={isReadyToPlay ? onPlay : undefined}
+            disabled={!isReadyToPlay || isPlaying}
+        >
+            <span>
+                {isReadyToPlay
+                    ? isPlaying
+                        ? 'Играем...'
+                        : 'Играть'
+                    : text}
+            </span>
+        </button>
     );
 }
