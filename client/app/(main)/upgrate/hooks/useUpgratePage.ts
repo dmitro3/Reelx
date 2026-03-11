@@ -48,12 +48,13 @@ export function useUpgratePage() {
 
     const handleAnimationComplete = (outcome: 'win' | 'lose') => {
         setIsPlaying(false);
-        if (!gameResult || gameResult.result !== outcome || gameResult.gifts.length === 0) {
+
+        if (!gameResult || gameResult.result !== outcome) {
             setGameResult(null);
             return;
         }
 
-        if (outcome === 'win') {
+        if (outcome === 'win' && gameResult.gifts.length > 0) {
             const mainGift = gameResult.gifts[0];
             eventBus.emit(MODAL_EVENTS.OPEN_WIN_MODAL, {
                 selectedItem: {
@@ -63,18 +64,11 @@ export function useUpgratePage() {
                 },
                 rolls: 1,
                 totalPrice: bet,
-                giftId: undefined,
-            });
-        } else {
-            eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, {
-                items: gameResult.gifts.map((g) => ({
-                    name: g.name ?? 'Подарок',
-                    image: g.image,
-                })),
-                title: 'Вы проиграли',
+                giftId: mainGift.id,
             });
         }
 
+        // при проигрыше ничего не показываем
         setGameResult(null);
     };
 

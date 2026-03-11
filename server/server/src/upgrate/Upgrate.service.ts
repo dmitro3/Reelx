@@ -265,9 +265,12 @@ export class UpgrateService {
     const state: UpgrateState = { winGifts, chance, bet, loseGifts };
 
     const didWin = Math.random() < state.chance;
-    const selected = didWin
-      ? this.selectWinningGifts(state)
-      : this.selectLosingGifts(state);
+
+    if (!didWin) {
+      return { result: 'lose', gifts: [] };
+    }
+
+    const selected = this.selectWinningGifts(state);
 
     let gifts: ToyRto[] = selected.map((g, idx) => ({
       id: g.id ?? String(idx),
@@ -275,7 +278,7 @@ export class UpgrateService {
       image: g.image,
     }));
 
-    if (didWin && gifts.length > 0) {
+    if (gifts.length > 0) {
       // Создаём подарки в инвентаре пользователя
       const created = await Promise.all(
         gifts.map((g) =>
@@ -298,7 +301,7 @@ export class UpgrateService {
       }));
     }
 
-    return { result: didWin ? 'win' : 'lose', gifts };
+    return { result: 'win', gifts };
   }
 
   private selectWinningGifts(state: UpgrateState): NftBuyerGift[] {
@@ -316,35 +319,6 @@ export class UpgrateService {
       if (sum > state.bet) break;
     }
     return picked.length > 0 ? picked : sorted.slice(0, 1);
-  }
-
-  private selectLosingGifts(state: UpgrateState): NftBuyerGift[] {
-    if (state.loseGifts.length === 0) return [];
-
-    const chooseSingle = Math.random() < 0.5;
-    if (chooseSingle) {
-      const idx = Math.floor(Math.random() * state.loseGifts.length);
-      return [state.loseGifts[idx]];
-    }
-
-    // Набор подарков с суммой < 50% ставки (если не получается — отдаём 1 подарок)
-    const limit = state.bet * 0.5;
-    const sorted = [...state.loseGifts].sort(
-      (a, b) => priceToTon(a.price) - priceToTon(b.price),
-    );
-
-    const picked: NftBuyerGift[] = [];
-    let sum = 0;
-    for (const g of sorted) {
-      const p = priceToTon(g.price);
-      if (picked.length === 0 && p <= 0) continue;
-      if (sum + p >= limit) break;
-      picked.push(g);
-      sum += p;
-    }
-
-    if (picked.length > 0) return picked;
-    return [sorted[0]];
   }
 
   private async fetchGiftsByPrice(amountTon: number): Promise<NftBuyerGift[]> {
