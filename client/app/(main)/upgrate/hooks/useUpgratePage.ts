@@ -21,7 +21,9 @@ export function useUpgratePage() {
 
     const toggleGiftSelection = (giftId: string) => {
         setSelectedGifts((prev) =>
-            prev.includes(giftId) ? [] : [giftId],
+            prev.includes(giftId)
+                ? prev.filter((id) => id !== giftId)
+                : [...prev, giftId],
         );
         setGameResult(null);
     };

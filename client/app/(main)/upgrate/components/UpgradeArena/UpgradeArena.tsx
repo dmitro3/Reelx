@@ -53,18 +53,6 @@ export function UpgradeArena({
         onCompleteRef.current = onAnimationComplete;
     }, [onAnimationComplete]);
 
-    // Сбрасываем шарик в нижнюю точку, когда не играем и результата нет
-    useEffect(() => {
-        if (!isPlaying && !result) {
-            angleRef.current = START_ANGLE;
-            setAngle(START_ANGLE);
-            targetAngleRef.current = null;
-            easeStartRef.current = null;
-            lastTimeRef.current = null;
-            rafRef.current = null;
-        }
-    }, [isPlaying, result]);
-
     // Запускаем базовое вращение, когда начинается игра
     useEffect(() => {
         if (!isPlaying) {
