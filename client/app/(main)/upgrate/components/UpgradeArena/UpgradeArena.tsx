@@ -117,9 +117,11 @@ export function UpgradeArena({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPlaying]);
 
-    // Когда появляется результат — вычисляем целевой угол, чтобы остановиться
+    // Когда появляется результат — один раз вычисляем целевой угол, чтобы остановиться
     useEffect(() => {
         if (!isPlaying || !result || chance == null) return;
+        // если цель уже выставлена — не пересчитываем
+        if (targetAngleRef.current != null && easeStartRef.current != null) return;
 
         const filledAngle = (FULL_DEG * percent) / 100;
         const safeFilled = Math.max(0, Math.min(FULL_DEG, filledAngle));
@@ -165,7 +167,7 @@ export function UpgradeArena({
         easeStartRef.current = performance.now();
         // lastTimeRef сбросим, чтобы easing работал от текущего времени
         lastTimeRef.current = null;
-    }, [result, chance, percent, isPlaying, angle]);
+    }, [result, chance, percent, isPlaying]);
 
     const arrowsRotation = ((angle % FULL_DEG) + FULL_DEG) % FULL_DEG;
 
@@ -204,20 +206,33 @@ export function UpgradeArena({
                 width={240}
                 height={240}
                 className={cls.arenaArrows}
-                style={{ transform: `rotate(${arrowsRotation}deg)` }}
                 priority
             />
             <div className={cls.percentageBlock}>
                 <span className={cls.percentage}>{percentage}%</span>
                 <span className={cls.chanceLabel}>Шанс на улучшение</span>
             </div>
-            <Image
-                src={upgradeIcon}
-                alt="Upgrade"
-                width={44}
-                height={44}
-                className={cls.upgradeIconCenter}
-            />
+            {/** Двигаем центральную иконку по большому кругу */}
+            {(() => {
+                const center = 120;
+                const orbitRadius = CIRCLE_R - 10; // чуть внутри прогресса
+                const rad = (arrowsRotation * Math.PI) / 180;
+                const x = center + orbitRadius * Math.cos(rad);
+                const y = center + orbitRadius * Math.sin(rad);
+                // Сдвигаем к левому/верхнему краю иконки (44x44)
+                const left = x - 22;
+                const top = y - 22;
+                return (
+                    <Image
+                        src={upgradeIcon}
+                        alt="Upgrade"
+                        width={44}
+                        height={44}
+                        className={cls.upgradeIconCenter}
+                        style={{ left, top }}
+                    />
+                );
+            })()}
         </div>
     );
 }
