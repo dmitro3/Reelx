@@ -20,13 +20,27 @@ interface GiftsModalProps {
     gifts?: GiftItem[];
 }
 
+type GiftsModalPayload =
+    | GiftItem[]
+    | {
+          items: GiftItem[];
+          title?: string;
+      };
+
 const GiftsModal = ({ gifts = [] }: GiftsModalProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [modalGifts, setModalGifts] = useState<GiftItem[]>(gifts);
+    const [title, setTitle] = useState<string>('Призовой пул');
 
     useEffect(() => {
-        const handleOpenModal = (items: GiftItem[]) => {
-            setModalGifts(items);
+        const handleOpenModal = (payload: GiftsModalPayload) => {
+            if (Array.isArray(payload)) {
+                setModalGifts(payload);
+                setTitle('Призовой пул');
+            } else {
+                setModalGifts(payload.items);
+                setTitle(payload.title ?? 'Призовой пул');
+            }
             setIsOpen(true);
         };
 
@@ -74,7 +88,7 @@ const GiftsModal = ({ gifts = [] }: GiftsModalProps) => {
             <div className={cls.content}>
                 {/* Заголовок */}
                 <div className={cls.header}>
-                    <h2 className={cls.title}>Призовой пул</h2>
+                    <h2 className={cls.title}>{title}</h2>
                     <button className={cls.closeButton} onClick={handleClose}>
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="10" cy="10" r="10" fill="rgba(255, 255, 255, 0.08)"/>

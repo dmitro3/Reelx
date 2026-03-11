@@ -38,22 +38,27 @@ export function useUpgratePage() {
         try {
             const res = await upgrateService.startGame();
             setGameResult(res);
-            if (res.gifts.length > 0) {
-                eventBus.emit(
-                    MODAL_EVENTS.OPEN_GIFTS_MODAL,
-                    res.gifts.map((g) => ({
-                        name: g.name ?? 'Подарок',
-                        image: g.image,
-                    })),
-                );
-            }
             setActiveTab('wishlist');
         } catch (e) {
             console.error('Ошибка start-game:', e);
             setGameResult(null);
-        } finally {
             setIsPlaying(false);
         }
+    };
+
+    const handleAnimationComplete = (outcome: 'win' | 'lose') => {
+        setIsPlaying(false);
+        if (!gameResult || gameResult.result !== outcome || gameResult.gifts.length === 0) {
+            return;
+        }
+
+        eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, {
+            items: gameResult.gifts.map((g) => ({
+                name: g.name ?? 'Подарок',
+                image: g.image,
+            })),
+            title: outcome === 'win' ? 'Вы выиграли' : 'Вы проиграли',
+        });
     };
 
     return {
@@ -74,5 +79,6 @@ export function useUpgratePage() {
         startGame,
         gameResult,
         isPlaying,
+        handleAnimationComplete,
     };
 }

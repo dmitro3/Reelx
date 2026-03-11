@@ -21,7 +21,13 @@ interface UpgradeArenaProps {
     result: 'win' | 'lose' | null;
 }
 
-export function UpgradeArena({ chance, isLoadingChance, isPlaying, result }: UpgradeArenaProps) {
+export function UpgradeArena({
+    chance,
+    isLoadingChance,
+    isPlaying,
+    result,
+    onAnimationComplete,
+}: UpgradeArenaProps & { onAnimationComplete: (result: 'win' | 'lose') => void }) {
     const percent = chance != null ? Math.min(100, Math.max(0, chance * 100)) : 0;
     const percentage = isLoadingChance ? '…' : chance != null ? Math.round(chance * 100) : 0;
     const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
@@ -32,6 +38,18 @@ export function UpgradeArena({ chance, isLoadingChance, isPlaying, result }: Upg
     const targetAngleRef = useRef<number | null>(null);
     const easeStartRef = useRef<number | null>(null);
     const startAngleRef = useRef<number>(0);
+    const resultRef = useRef<'win' | 'lose' | null>(null);
+    const onCompleteRef = useRef<((r: 'win' | 'lose') => void) | null>(null);
+    const hasCompletedRef = useRef(false);
+
+    useEffect(() => {
+        resultRef.current = result;
+        hasCompletedRef.current = false;
+    }, [result]);
+
+    useEffect(() => {
+        onCompleteRef.current = onAnimationComplete;
+    }, [onAnimationComplete]);
 
     // Запускаем базовое вращение, когда начинается игра
     useEffect(() => {
@@ -69,6 +87,12 @@ export function UpgradeArena({ chance, isLoadingChance, isPlaying, result }: Upg
                     easeStartRef.current = null;
                     lastTimeRef.current = null;
                     rafRef.current = null;
+
+                    const res = resultRef.current;
+                    if (res && !hasCompletedRef.current && onCompleteRef.current) {
+                        hasCompletedRef.current = true;
+                        onCompleteRef.current(res);
+                    }
                     return;
                 }
             } else {

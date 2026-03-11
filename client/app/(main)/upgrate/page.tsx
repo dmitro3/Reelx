@@ -31,6 +31,7 @@ export default function UpgratePage() {
         startGame,
         gameResult,
         isPlaying,
+        handleAnimationComplete,
     } = useUpgratePage();
 
     return (
@@ -43,6 +44,7 @@ export default function UpgratePage() {
                 isLoadingChance={isLoadingChance}
                 isPlaying={isPlaying}
                 result={gameResult?.result ?? null}
+                onAnimationComplete={handleAnimationComplete}
             />
 
             <BeforeAfterRow
