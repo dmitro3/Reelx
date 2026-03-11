@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { eventBus, MODAL_EVENTS } from '@/features/eventBus/eventBus';
 import { useInventoryGifts } from './useInventoryGifts';
 import { useChanceData } from './useChanceData';
 import { upgrateService, type StartGameResponse } from '@/entites/upgrate/api/api';
@@ -37,6 +38,15 @@ export function useUpgratePage() {
         try {
             const res = await upgrateService.startGame();
             setGameResult(res);
+            if (res.gifts.length > 0) {
+                eventBus.emit(
+                    MODAL_EVENTS.OPEN_GIFTS_MODAL,
+                    res.gifts.map((g) => ({
+                        name: g.name ?? 'Подарок',
+                        image: g.image,
+                    })),
+                );
+            }
             setActiveTab('wishlist');
         } catch (e) {
             console.error('Ошибка start-game:', e);

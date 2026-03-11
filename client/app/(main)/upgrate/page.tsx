@@ -1,6 +1,7 @@
 'use client';
 
 import cls from './upgrate.module.scss';
+import { GiftsModal } from '@/shared/layout/GiftsModal/GiftsModal';
 import { Header } from '@/shared/layout/Header/Header';
 import { useUpgratePage } from './hooks';
 import {
@@ -37,7 +38,12 @@ export default function UpgratePage() {
             <Header />
             <div className={cls.bgEllipse} />
 
-            <UpgradeArena chance={chance} isLoadingChance={isLoadingChance} />
+            <UpgradeArena
+                chance={chance}
+                isLoadingChance={isLoadingChance}
+                isPlaying={isPlaying}
+                result={gameResult?.result ?? null}
+            />
 
             <BeforeAfterRow
                 bet={bet}
@@ -59,19 +65,6 @@ export default function UpgratePage() {
                     onPlay={startGame}
                 />
 
-                {gameResult && (
-                    <div className={cls.emptyState}>
-                        <div>
-                            {gameResult.result === 'win' ? 'Вы выиграли' : 'Вы проиграли'}
-                        </div>
-                        <div>
-                            {gameResult.gifts.map((g) => (
-                                <div key={g.id}>{g.name ?? g.id}</div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
                 <div className={cls.giftGrid}>
@@ -86,6 +79,7 @@ export default function UpgratePage() {
                     />
                 </div>
             </div>
+            <GiftsModal />
         </div>
     );
 }
