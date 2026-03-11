@@ -49,16 +49,33 @@ export function useUpgratePage() {
     const handleAnimationComplete = (outcome: 'win' | 'lose') => {
         setIsPlaying(false);
         if (!gameResult || gameResult.result !== outcome || gameResult.gifts.length === 0) {
+            setGameResult(null);
             return;
         }
 
-        eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, {
-            items: gameResult.gifts.map((g) => ({
-                name: g.name ?? 'Подарок',
-                image: g.image,
-            })),
-            title: outcome === 'win' ? 'Вы выиграли' : 'Вы проиграли',
-        });
+        if (outcome === 'win') {
+            const mainGift = gameResult.gifts[0];
+            eventBus.emit(MODAL_EVENTS.OPEN_WIN_MODAL, {
+                selectedItem: {
+                    name: mainGift.name ?? 'Подарок',
+                    price: undefined,
+                    image: mainGift.image,
+                },
+                rolls: 1,
+                totalPrice: bet,
+                giftId: undefined,
+            });
+        } else {
+            eventBus.emit(MODAL_EVENTS.OPEN_GIFTS_MODAL, {
+                items: gameResult.gifts.map((g) => ({
+                    name: g.name ?? 'Подарок',
+                    image: g.image,
+                })),
+                title: 'Вы проиграли',
+            });
+        }
+
+        setGameResult(null);
     };
 
     return {

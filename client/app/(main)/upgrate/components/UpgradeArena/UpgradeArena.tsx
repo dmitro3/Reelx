@@ -12,6 +12,7 @@ const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
 const FULL_DEG = 360;
 const BASE_SPIN_SPEED = 720; // градусов в секунду
 const EASE_DURATION = 1200; // мс
+const START_ANGLE = 90; // 6 часов (нижняя точка)
 
 interface UpgradeArenaProps {
     chance: number | null;
@@ -32,7 +33,7 @@ export function UpgradeArena({
     const percentage = isLoadingChance ? '…' : chance != null ? Math.round(chance * 100) : 0;
     const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
 
-    const [angle, setAngle] = useState(0);
+    const [angle, setAngle] = useState(START_ANGLE);
     const rafRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number | null>(null);
     const targetAngleRef = useRef<number | null>(null);
@@ -50,6 +51,17 @@ export function UpgradeArena({
     useEffect(() => {
         onCompleteRef.current = onAnimationComplete;
     }, [onAnimationComplete]);
+
+    // Сбрасываем шарик в нижнюю точку, когда не играем и результата нет
+    useEffect(() => {
+        if (!isPlaying && !result) {
+            setAngle(START_ANGLE);
+            targetAngleRef.current = null;
+            easeStartRef.current = null;
+            lastTimeRef.current = null;
+            rafRef.current = null;
+        }
+    }, [isPlaying, result]);
 
     // Запускаем базовое вращение, когда начинается игра
     useEffect(() => {
