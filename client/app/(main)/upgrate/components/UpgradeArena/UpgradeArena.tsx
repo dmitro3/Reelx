@@ -36,6 +36,7 @@ export function UpgradeArena({
     const [angle, setAngle] = useState(START_ANGLE);
     const rafRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number | null>(null);
+    const angleRef = useRef<number>(START_ANGLE);
     const targetAngleRef = useRef<number | null>(null);
     const easeStartRef = useRef<number | null>(null);
     const startAngleRef = useRef<number>(0);
@@ -55,6 +56,7 @@ export function UpgradeArena({
     // Сбрасываем шарик в нижнюю точку, когда не играем и результата нет
     useEffect(() => {
         if (!isPlaying && !result) {
+            angleRef.current = START_ANGLE;
             setAngle(START_ANGLE);
             targetAngleRef.current = null;
             easeStartRef.current = null;
@@ -77,7 +79,7 @@ export function UpgradeArena({
             const dt = (timestamp - lastTimeRef.current) / 1000; // в секундах
             lastTimeRef.current = timestamp;
 
-            let nextAngle = angle + BASE_SPIN_SPEED * dt;
+            let nextAngle = angleRef.current + BASE_SPIN_SPEED * dt;
 
             // Если есть целевой угол (результат уже известен) — переходим к easing
             if (targetAngleRef.current != null && easeStartRef.current != null) {
@@ -91,6 +93,7 @@ export function UpgradeArena({
                 const eased = 1 - (1 - progress) * (1 - progress);
                 nextAngle = start + (end - start) * eased;
 
+                angleRef.current = nextAngle;
                 setAngle(nextAngle);
 
                 if (progress >= 1) {
@@ -108,6 +111,7 @@ export function UpgradeArena({
                     return;
                 }
             } else {
+                angleRef.current = nextAngle;
                 setAngle(nextAngle);
             }
 
@@ -140,11 +144,15 @@ export function UpgradeArena({
 
         // Нормализуем текущий угол в [0, 360)
         const currentAngle =
-            ((angle % FULL_DEG) + FULL_DEG) % FULL_DEG;
+            ((angleRef.current % FULL_DEG) + FULL_DEG) % FULL_DEG;
+        // Переводим в локальные координаты относительно нижней точки (START_ANGLE)
+        const localCurrent =
+            ((currentAngle - START_ANGLE + FULL_DEG) % FULL_DEG + FULL_DEG) %
+            FULL_DEG;
 
         let targetLocal: number;
         if (result === 'win') {
-            // Попадаем внутрь закрашенного сектора
+            // Попадаем внутрь закрашенного сектора: [0, safeFilled] в локальных координатах
             if (safeFilled <= 0) {
                 // На всякий случай, если шанс 0 — считаем как проигрыш
                 targetLocal = Math.random() * FULL_DEG;
@@ -161,20 +169,26 @@ export function UpgradeArena({
                 // Шанс 100% — нет незакрашенной области, считаем как выигрыш
                 targetLocal = Math.random() * FULL_DEG;
             } else {
-                const start = safeFilled;
                 const margin = 10;
-                const from = start + margin;
+                const from = safeFilled + margin;
                 const to = FULL_DEG - margin;
                 const span = Math.max(0, to - from);
                 targetLocal = from + Math.random() * (span || 1);
             }
         }
 
+        // Переводим локальный угол обратно в глобальные координаты
+        const targetLocalGlobal =
+            ((targetLocal + START_ANGLE) % FULL_DEG + FULL_DEG) % FULL_DEG;
+
         // Хотим сделать ещё пару полных оборотов перед остановкой
         const extraTurns = 3;
-        const targetGlobal = angle + (extraTurns * FULL_DEG + (targetLocal - currentAngle));
+        const baseAngle = angleRef.current;
+        const targetGlobal =
+            baseAngle +
+            (extraTurns * FULL_DEG + (targetLocalGlobal - currentAngle));
 
-        startAngleRef.current = angle;
+        startAngleRef.current = baseAngle;
         targetAngleRef.current = targetGlobal;
         easeStartRef.current = performance.now();
         // lastTimeRef сбросим, чтобы easing работал от текущего времени
